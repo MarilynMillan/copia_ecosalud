@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id='view_order_form_dual_currency_extension' model='ir.ui.view'>
+        <field name='name'>sale.order.form.dual.currency.extension</field>
+        <field name='model'>sale.order</field>
+        <field name='inherit_id' ref='sale.view_order_form'/>
+        <field name='arch' type='xml'>
+            
+            <xpath expr="//sheet" position="before">
+                <field name='company_currency_id' invisible='1'/>
+                <field name='currency_id_dif' invisible='1'/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_title')]/h1" position="after">
+                <div style="margin-top: 10px; margin-bottom: 15px; text-align: left;">
+                    <span class="badge rounded-pill text-danger border border-danger bg-white" 
+                          style="font-size: 12px; font-weight: 500; padding: 4px 10px;">
+                        <i class="fa fa-ban" style="margin-right: 5px;"/>
+                        Sin derecho a crédito fiscal
+                    </span>
+                </div>
+            </xpath>
+
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name='string'>Cliente / Razón Social</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name='string'>Número de Cotización</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name='tax_today' invisible='1' string='Tasa Factura'/>
+            </xpath>
+
+            <xpath expr="//field[@name='note']" position="before">
+                
+                <group class='oe_subtotal_footer oe_right' name='sale_total_ves_ref' 
+                       invisible="currency_id == company_currency_id">
+                    
+                    <field name='amount_untaxed_ves' string='Base Imponible Bs.'/>
+                    <field name='amount_tax_ves' string='Impuestos Bs.'/>
+                    
+                    <div class='oe_subtotal_footer_separator oe_inline o_td_label'>
+                        <label for='amount_total_ves' string='Total Bs.'/>
+                    </div>
+                    <field name='amount_total_ves' nolabel='1' class='oe_subtotal_footer_separator'/>
+                </group>
+
+                <group class='oe_subtotal_footer oe_right' name='sale_total_usd_ref' 
+                       invisible="currency_id != company_currency_id"> 
+                    
+                    <field name='amount_untaxed_usd' string='Base Imponible USD'/>
+                    <field name='amount_tax_usd' string='Impuestos USD'/>
+                    
+                    <div class='oe_subtotal_footer_separator oe_inline o_td_label'>
+                        <label for='amount_total_usd' string='Total USD'/>
+                    </div>
+                    <field name='amount_total_usd' nolabel='1' class='oe_subtotal_footer_separator'/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<templates xml:space='preserve'>
+
+    <t t-name='bcv_rates_menu' owl='1'>
+        <div class='new_icon d-flex align-items-center'>
+            <div class='icon_div d-flex flex-column justify-content-center' style='margin-right: 10px; text-align: right; line-height: 1.2;'>
+                
+                <div style='color: black; font-weight: 700; font-size: 13px; white-space: nowrap;'>
+                    BCV: € <span t-esc='state.eur'/> | $ <span t-esc='state.usd'/>
+                </div>
+
+                <div style='color: #444; font-size: 10px; white-space: nowrap;'>
+                    <i class='fa fa-user'/> <span t-esc='state.user_name'/> | 
+                    <i class='fa fa-clock-o'/> <span t-esc='state.current_time'/>
+                </div>
+
+            </div>
+        </div>
+    </t>
+
+</templates>

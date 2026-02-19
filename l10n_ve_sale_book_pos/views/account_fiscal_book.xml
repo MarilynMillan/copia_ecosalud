@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <data>
+        <record id="view_fiscal_sale_book_form_pos" model="ir.ui.view">
+            <field name="name">fiscal.sale.book.form POS</field>
+            <field name="model">account.fiscal.book</field>
+            <field name="inherit_id" ref="l10n_ve_full.view_fiscal_sale_book_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='issue_invoice_ids']/.." position="after">
+                    <page string="Reportes Z" invisible="type != 'sale'">
+                        <field name="pos_report_z_ids" nolabel="1"/>
+                    </page>
+                    <page string="Ordenes POS" invisible="type != 'sale'">
+                        <field name="pos_order_ids" nolabel="1"/>
+                    </page>
+                </xpath>
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="pos_group" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

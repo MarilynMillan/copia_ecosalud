@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+        
+        <record id='action_create_open_wh_iva' model='ir.actions.server'>
+            <field name='name'>Aplicar y Ver Retención IVA</field>
+            <field name='model_id' ref='account.model_account_move'/>
+            <field name='binding_model_id' ref='account.model_account_move'/>
+            <field name='state'>code</field>
+            <field name='code'>
+# 1. Si no existe enlace, intentamos crear
+if not record.rela_wh_iva:
+    record.action_wh_iva_create()
+    
+    # Limpiamos cache para intentar ver el cambio
+    record.invalidate_recordset(['rela_wh_iva'])
+
+# 2. Estrategia de Busqueda:
+# A. Intentamos leer el campo directo refrescado
+doc_id = record.env['account.move'].browse(record.id).rela_wh_iva.id
+
+# B. Si sigue vacio (por latencia), BUSCAMOS manualmente en la tabla de retenciones
+if not doc_id:
+    # Buscamos una retencion en borrador que contenga esta factura en sus lineas
+    # Nota: wh_lines -> invoice_id es la relacion estandar en l10n_ve_full
+    wh_encontrada = env['account.wh.iva'].search([
+        ('wh_lines.invoice_id', '=', record.id),
+        ('state', '=', 'draft')
+    ], limit=1, order='id desc')
+    
+    if wh_encontrada:
+        doc_id = wh_encontrada.id
+
+# 3. Abrir el documento si lo encontramos
+if doc_id:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Retención IVA',
+        'res_model': 'account.wh.iva',
+        'res_id': doc_id,
+        'view_mode': 'form',
+        'target': 'current',
+    }
+else:
+    raise UserError('La retención se está procesando pero no se pudo abrir automáticamente. Por favor recargue la página para ver el enlace.')
+            </field>
+        </record>
+
+        <record id='action_create_open_wh_islr' model='ir.actions.server'>
+            <field name='name'>Aplicar y Ver Retención ISLR</field>
+            <field name='model_id' ref='account.model_account_move'/>
+            <field name='binding_model_id' ref='account.model_account_move'/>
+            <field name='state'>code</field>
+            <field name='code'>
+if not record.islr_wh_doc_id:
+    record.generate_islr()
+    record.invalidate_recordset(['islr_wh_doc_id'])
+
+doc_id = record.env['account.move'].browse(record.id).islr_wh_doc_id.id
+
+if doc_id:
+    action = {
+        'type': 'ir.actions.act_window',
+        'name': 'Retención ISLR',
+        'res_model': 'account.wh.islr.doc',
+        'res_id': doc_id,
+        'view_mode': 'form',
+        'target': 'current',
+    }
+            </field>
+        </record>
+
+        <record id='action_print_wh_iva_from_move' model='ir.actions.server'>
+            <field name='name'>Imprimir Comprobante IVA</field>
+            <field name='model_id' ref='account.model_account_move'/>
+            <field name='binding_type'>report</field>
+            <field name='state'>code</field>
+            <field name='code'>
+if record.rela_wh_iva:
+    action = env.ref('l10n_ve_full.action_withholdong_vat_report').report_action(record.rela_wh_iva)
+            </field>
+        </record>
+
+        <record id='action_print_wh_islr_from_move' model='ir.actions.server'>
+            <field name='name'>Imprimir Comprobante ISLR</field>
+            <field name='model_id' ref='account.model_account_move'/>
+            <field name='binding_type'>report</field>
+            <field name='state'>code</field>
+            <field name='code'>
+if record.islr_wh_doc_id:
+    action = env.ref('l10n_ve_full.action_withholdong_islr_report').report_action(record.islr_wh_doc_id)
+            </field>
+        </record>
+
+    </data>
+</odoo>

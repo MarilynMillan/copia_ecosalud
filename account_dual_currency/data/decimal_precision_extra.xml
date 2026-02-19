@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record forcecreate="True" id="decimal_product_dual_currency_usd" model="decimal.precision">
+                <field name="name">Product_Price_USD</field>
+                <field name="digits">6</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="account_payment_dual_currency" model="ir.ui.view">
+            <field name="name">Dual Currency: account.payment.form</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
+            <field name="arch" type="xml">
+                <!--<xpath expr="//header" position="inside">
+                     <button name="crear_diferencial_cambio" string="Crear asiento diferencial" type="object" class="oe_highlight" invisible="not invoice_ids or state == 'draft' or move_id_dif or amount_diferential == 0"/>
+                </xpath>-->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="button_open_diferencial" type="object" class="oe_stat_button" icon="fa-bars" invisible="diferencial_move_count == 0">
+                        <div class="o_form_field o_stat_info">
+                            <span class="o_stat_text">
+                                <field name="diferencial_move_count"/>
+                                <span> Diferencial</span>
+                            </span>
+                        </div>
+                    </button>
+                </xpath>
+                <xpath expr="//field[@name='date']" position="before">
+                     <field name="currency_equal" invisible="1"/>
+                     <field name="mantener_bs" />
+                     <field name="tax_today" readonly="state != 'draft'"/>
+                     <field name="amount_local" readonly="1" force_save="1" invisible="not currency_equal"/>
+                     <field name="amount_ref" readonly="1" force_save="1" invisible="currency_equal"/>
+                     <field name="currency_id_dif" readonly="1" invisible="currency_equal"/>
+                     <field name="invoices" invisible="1"/>
+                     <field name="invoice_ids" context="{'default_order': 'id asc'}" widget="many2many_tags" readonly="state != 'draft'" options="{'no_create': True}"/>
+                     <field name="amount_total_usd" invisible="not invoice_ids"/>
+                     <field name="amount_total_bs" invisible="not invoice_ids"/>
+                     <!--<field name="amount_diferential" invisible="not invoice_ids"/>-->
+                     <field name="currency_id_company" invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='journal_id']" position="after">
+                    <field name="move_id_dif"/>
+                </xpath>
+                <xpath expr="//group[@name='group2']" position="after">
+                    <group name="group_igtf">
+                        <field name="currency_id_name" invisible="1"/>
+                        <field name="aplicar_igtf_divisa" readonly="state != 'draft'" invisible="currency_id_name == 'VES'"/>
+                        <field name="journal_igtf_id" widget="selection"  domain="[('type', 'in', ('bank', 'cash'))]"  readonly="state != 'draft'" invisible="not aplicar_igtf_divisa or currency_id_name == 'VES'"/>
+                        <field name="igtf_divisa_porcentage" invisible="not aplicar_igtf_divisa or currency_id_name == 'VES'"/>
+                        <field name="mount_igtf" invisible="not aplicar_igtf_divisa or currency_id_name == 'VES'"/>
+                        <field name="amount_total_pagar" style="color: red;" invisible="not aplicar_igtf_divisa or currency_id_name == 'VES'"/>
+                        <field name="move_id_igtf_divisa" invisible="not aplicar_igtf_divisa or currency_id_name == 'VES'"/>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='partner_bank_id']" position="after">
+                    <field name="analytic_distribution" widget="analytic_distribution" string="Centro de Costo"
+                        groups="analytic.group_analytic_accounting"
+                        />
+                </xpath>
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="related_payment_reference"/>
+                </xpath>
+                
+            </field>
+        </record>
+
+        <!--   Heredar la vista account.view_account_payment_tree     -->
+        <record id="account_payment_tree_dual_currency" model="ir.ui.view">
+            <field name="name">Dual Currency: account.payment.tree</field>
+            <field name="model">account.payment</field>
+            <field name="inherit_id" ref="account.view_account_payment_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_company_currency_signed']" position="after">
+                    <field name="currency_id_dif" column_invisible="True"/>
+                    <field name="tax_today" readonly="state != 'draft'"/>
+                    <field name="amount_ref" string="Importe Ref."/>
+                    <field name="analytic_distribution" widget="analytic_distribution" string="Centro de Costo" groups="analytic.group_analytic_accounting" />
+                    <field name="related_payment_reference"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

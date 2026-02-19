@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_dual_currency_report_igtf" model="account.report">
+        <field name="name">Listado Retención IGTF</field>
+        <field name="filter_unfold_all" eval="True"/>
+        <field name="filter_partner" eval="False"/>
+        <field name="filter_show_draft" eval="False"/>
+        <field name="filter_unreconciled" eval="False"/>
+        <field name="filter_period_comparison" eval="False"/>
+        <field name="filter_date_range" eval="True"/>
+        <field name="filter_multi_company">selector</field>
+        <field name="default_opening_date_filter">this_month</field>
+        <field name="search_bar" eval="True"/>
+        <field name="custom_handler_model_id" ref="model_account_dual_currency_report_handler_igtf"/>
+        <field name="column_ids">
+            <record id="retencion_report_igtf_name" model="account.report.column">
+                <field name="name">Documento</field>
+                <field name="expression_label">name</field>
+                <field name="figure_type">string</field>
+            </record>
+            <record id="retencion_report_igtf_nro_ctrl" model="account.report.column">
+                <field name="name">Nro. Control</field>
+                <field name="expression_label">nro_ctrl</field>
+                <field name="figure_type">string</field>
+            </record>
+            <record id="retencion_report_igtf_date" model="account.report.column">
+                <field name="name">Fecha</field>
+                <field name="expression_label">date</field>
+                <field name="figure_type">string</field>
+            </record>
+            <record id="retencion_report_igtf_partner" model="account.report.column">
+                <field name="name">Cliente</field>
+                <field name="expression_label">partner</field>
+                <field name="figure_type">string</field>
+            </record>
+            <record id="retencion_report_igtf_rif" model="account.report.column">
+                <field name="name">RIF</field>
+                <field name="expression_label">rif</field>
+                <field name="figure_type">string</field>
+            </record>
+            <record id="retencion_report_igtf_total_invoice" model="account.report.column">
+                <field name="name">Total Factura</field>
+                <field name="expression_label">amount_total</field>
+                <field name="figure_type">float</field>
+            </record>
+            <record id="retencion_report_igtf_base_igtf_bs" model="account.report.column">
+                <field name="name">Monto Base IGTF</field>
+                <field name="expression_label">igtf_base</field>
+                <field name="figure_type">float</field>
+            </record>
+            <record id="retencion_report_igtf_base_igtf" model="account.report.column">
+                <field name="name">Monto Base IGTF ($)</field>
+                <field name="expression_label">base_igtf</field>
+                <field name="figure_type">float</field>
+            </record>
+            <record id="retencion_report_factor_bcv" model="account.report.column">
+                <field name="name">Factor BCV</field>
+                <field name="expression_label">tax_today</field>
+                <field name="figure_type">float</field>
+            </record>
+            <record id="retencion_report_igtf_total_retention" model="account.report.column">
+                <field name="name">Total IGTF</field>
+                <field name="expression_label">igtf_aplicado</field>
+                <field name="figure_type">float</field>
+            </record>
+        </field>
+    </record>
+
+    <record id="action_account_dual_currency_retencion_report_igtf" model="ir.actions.client">
+        <field name="name">Listado Retención IGTF</field>
+        <field name="tag">account_report</field>
+        <field name="context" eval="{'report_id': ref('account_dual_currency.account_dual_currency_report_igtf')}" />
+    </record>
+
+    <menuitem id="menu_action_account_dual_currency_retencion_report_igtf" name="Listado Retención IGTF" action="action_account_dual_currency_retencion_report_igtf" parent="l10n_ve_full.menu_venezuela_reporting" sequence="210"/>
+</odoo>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- crear la vista lista del modelo account.wh.municipal.docs -->
+    <record id="view_account_wh_municipal_docs_tree" model="ir.ui.view">
+        <field name="name">account.wh.municipal.docs.tree</field>
+        <field name="model">account.wh.municipal.docs</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state == 'done'" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="periodo_fiscal"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- crear la vista formulario del modelo account.wh.municipal.docs -->
+    <record model="ir.ui.view" id="view_account_wh_municipal_docs_form">
+        <field name="name">account.wh.municipal.docs.form</field>
+        <field name="model">account.wh.municipal.docs</field>
+        <field name="arch" type="xml">
+            <form string="Municipal Withholding Document">
+                <header>
+                    <button name="action_post" string="Validar" type="object" invisible="state in ('done','cancel')" confirm="¿Está seguro que desea validar este documento?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="state in ('done','cancel')"/>
+                            <field name="date" readonly="state in ('done','cancel')"/>
+                            <field name="periodo_fiscal"/>
+                            <field name="partner_id" readonly="state in ('done','cancel')"/>
+                        </group>
+                        <group>
+                            <field name="type" readonly="state in ('done','cancel')"/>
+                            <field name="journal_id" invisible="1"/>
+                            <field name="company_id" readonly="state in ('done','cancel')"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines">
+                            <field name="line_ids" nolabel="1" widget="one2many_list" readonly="state in ('done','cancel')">
+                                <tree editable="bottom">
+                                    <field name="invoice_id" domain="[('partner_id','=',parent.partner_id),('state','=','posted'),('move_type','in',['in_invoice'])]"/>
+                                    <field name="municipal_rate_id"/>
+                                    <field name="rate_value"/>
+                                    <field name="porc_reten_muni"/>
+                                    <field name="monto_reten_muni"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <field name="amount_total"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- crear la vista búsqueda del modelo account.wh.municipal.docs -->
+    <record id="view_account_wh_municipal_docs_filter" model="ir.ui.view">
+        <field name="name">account.wh.municipal.docs.search</field>
+        <field name="model">account.wh.municipal.docs</field>
+        <field name="arch" type="xml">
+            <search string="Search Municipal Withholding Document">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="amount_total"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- crear la acción de ventana del modelo account.wh.municipal.docs para facturas de proveedores agregando el dominio -->
+    <record id="act_account_wh_municipal_docs_proveedor" model="ir.actions.act_window">
+        <field name="name">Retenciones Municipales a Proveedores</field>
+        <field name="res_model">account.wh.municipal.docs</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('type','=','in_invoice')]</field>
+        <field name="context">{'default_type':'in_invoice'}</field>
+    </record>
+
+    <!-- crear la acción de ventana del modelo account.wh.municipal.docs para facturas de clientes agregando el dominio -->
+    <record id="act_account_wh_municipal_docs_cliente" model="ir.actions.act_window">
+        <field name="name">Retenciones Municipales a Clientes</field>
+        <field name="res_model">account.wh.municipal.docs</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('type','=','out_invoice')]</field>
+        <field name="context">{'default_type':'out_invoice'}</field>
+    </record>
+
+
+    <!-- crear el menú de la acción de ventana del modelo account.wh.municipal.docs -->
+    <menuitem name="Retención Municipal" id="menu_action_account_wh_municipal_docs_proveedor" action="act_account_wh_municipal_docs_proveedor" parent="account.menu_finance_payables"/>
+    <menuitem name="Retención Municipal" id="menu_action_account_wh_municipal_docs_cliente" action="act_account_wh_municipal_docs_cliente" parent="account.menu_finance_receivables"/>
+
+</odoo>

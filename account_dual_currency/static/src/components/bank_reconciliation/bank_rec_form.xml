@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- hacer herencia de account_accountant.BankRecRecordFormLineIds -->
+    <t t-name="account_dual_currency.BankRecRecordFormLineIds" t-inherit="account_accountant.BankRecRecordFormLineIds"
+       t-inherit-mode="extension">
+        <xpath expr="//tr[hasclass('o_bank_rec_expanded_line')]/t[@t-foreach='line_ids_columns']" position="replace">
+            <t t-foreach="line_ids_columns" t-as="column" t-key="column[0]">
+                                    <t t-if="column[0] === 'account'">
+                                        <td class="o_data_cell o_field_cell o_list_many2one"
+                                            t-att-class="{'o_invalid_cell': invalidFields.includes('account_id')}"
+                                            field="account_id"
+                                            t-att-title="line.data.account_id[1]"
+                                            t-out="line.data.account_id[1]"/>
+                                    </t>
+                <t t-if="column[0] === 'partner'">
+                                        <t t-if="line.data.flag === 'liquidity' and !line.data.partner_id">
+                                            <td class="o_data_cell o_field_cell o_list_many2one text-muted"
+                                                field="partner_id"
+                                                t-att-title="data.partner_name or ''"
+                                                t-out="data.partner_name or ''"/>
+                                        </t>
+                    <t t-else="">
+                                            <td class="o_data_cell o_field_cell o_list_many2one"
+                                                field="partner_id"
+                                                t-att-title="line.data.partner_id[1]"
+                                                t-out="line.data.partner_id[1]"/>
+                                        </t>
+                                    </t>
+                <t t-if="column[0] === 'date'">
+                                        <t t-if="['manual', 'early_payment', 'auto_balance', 'tax_line'].includes(line.data.flag)">
+                                            <td class="o_data_cell o_field_cell" field="date">
+                                                <span field="date" class="badge text-bg-secondary">New</span>
+                                            </td>
+                                        </t>
+                    <t t-else="">
+                                            <td class="o_data_cell o_field_cell"
+                                                t-att-class="{'o_invalid_cell': invalidFields.includes('date')}"
+                                                field="date"
+                                                t-out="formatDateField(line.data.date)"/>
+                                        </t>
+                                    </t>
+                <t t-if="column[0] === 'analytic_distribution'">
+                                        <td class="o_data_cell o_field_cell o_field_widget o_field_analytic_distribution"
+                                            field="analytic_distribution">
+                                            <div class="o_field_tags d-inline-flex flex-wrap mw-100">
+                                                <AnalyticDistribution
+                                                        name="'analytic_distribution'"
+                                                        record="line"
+                                                        readonly="true"
+                                                        t-key="getKey(line.data)"
+                                                />
+                                            </div>
+                                        </td>
+                                    </t>
+                <t t-if="column[0] === 'taxes'" name="col_taxes">
+                                        <td class="o_data_cell o_field_cell o_field_widget o_field_many2many_tags"
+                                            field="tax_ids">
+                                            <div class="o_field_tags d-inline-flex flex-wrap mw-100">
+                                                <TagsList
+                                                        tags="line.data.tax_ids.records.map((tax) => ({text: tax.data.display_name, id: tax.resId}))"/>
+                                            </div>
+                                        </td>
+                                    </t>
+                <t t-if="column[0] === 'amount_currency'">
+                                        <t t-if="line.data.flag === 'exchange_diff'">
+                                            <td/>
+                                        </t>
+                    <t t-else="">
+                                            <td class="o_data_cell o_field_cell o_list_number"
+                                                field="amount_currency"
+                                                style="justify-content: right;"
+                                                t-out="isMonetaryZero(line.data.amount_currency, line.data.currency_id[0]) ? '' : formatMonetaryField(line.data.amount_currency, line.data.currency_id[0])"/>
+                                        </t>
+                                    </t>
+                <t t-if="column[0] === 'currency'">
+                                        <t t-if="line.data.flag === 'exchange_diff'">
+                                            <td/>
+                                        </t>
+                    <t t-else="">
+                                            <td class="o_data_cell o_field_cell o_list_many2one"
+                                                field="currency_id"
+                                                t-att-title="line.data.currency_id[1]"
+                                                t-out="line.data.currency_id[1]"/>
+                                        </t>
+                                    </t>
+                <t t-if="column[0] === 'debit'">
+                                        <td class="o_data_cell o_field_cell o_list_number"
+                                            field="debit"
+                                            t-out="isMonetaryZero(line.data.debit, line.data.company_currency_id[0]) ? '' : formatMonetaryField(line.data.debit, line.data.company_currency_id[0])"/>
+                                    </t>
+                <t t-if="column[0] === 'credit'">
+                                        <td class="o_data_cell o_field_cell o_list_number"
+                                            field="credit"
+                                            t-out="isMonetaryZero(line.data.credit, line.data.company_currency_id[0]) ? '' : formatMonetaryField(line.data.credit, line.data.company_currency_id[0])"/>
+                                    </t>
+                <t t-if="column[0] === 'debit_usd'">
+                                        <td class="o_data_cell o_field_cell o_list_number"
+                                            field="debit_usd"
+                                            t-out="isMonetaryZero(line.data.debit_usd, line.data.currency_id_dif_statement[0]) ? '' : formatMonetaryField(line.data.debit_usd, line.data.currency_id_dif_statement[0])"/>
+                                    </t>
+                <t t-if="column[0] === 'credit_usd'">
+                                        <td class="o_data_cell o_field_cell o_list_number"
+                                            field="credit_usd"
+                                            t-out="isMonetaryZero(line.data.credit_usd, line.data.currency_id_dif_statement[0]) ? '' : formatMonetaryField(line.data.credit_usd, line.data.currency_id_dif_statement[0])"/>
+                                    </t>
+                <t t-if="column[0] === '__trash'">
+                                        <td class="o_list_record_remove">
+                                            <button t-if="['valid', 'invalid'].includes(data.state) and !['liquidity', 'auto_balance', 'tax_line'].includes(line.data.flag)"
+                                                    t-on-click.prevent.stop="(ev) => this.actionRemoveLine(line)"
+                                                    class="btn fa fa-trash-o"/>
+                                        </td>
+                                    </t>
+            </t>
+
+        </xpath>
+        <xpath expr="//tr[hasclass('o_bank_rec_second_line')]" position="replace">
+            <tr class="o_data_row o_selected_row o_list_no_open o_bank_rec_second_line"
+                t-att-class="{
+                                    'o_bank_rec_liquidity_line': line.data.flag === 'liquidity',
+                                    'o_bank_rec_auto_balance_line': line.data.flag === 'auto_balance',
+                                    'o_bank_rec_selected_line': line.data.index === data.form_index and this.state.bankRecNotebookPage === 'manual_operations_tab',
+                                    'table-info': line.data.index === data.form_index and this.state.bankRecNotebookPage === 'manual_operations_tab',
+                                }"
+                t-on-click="(ev) => this.handleLineClicked(ev, line)">
+                <td t-att-colspan="line_ids_columns.length - (display_currency_columns ? 7 : 5)"
+                    class="o_data_cell o_field_cell o_list_char text-wrap fw-normal"
+                    field="name">
+                    <t t-if="line.data.source_aml_move_id[0] and (['new_aml', 'aml'].includes(line.data.flag) or (line.data.flag == 'liquidity' and data.state == 'reconciled'))">
+                        <span class="o_form_uri fst-italic"
+                              t-out="line.data.source_aml_move_id[1]"
+                              t-on-click="() => this.actionRedirectToSourceMove(line)"/>
+                        <span class="me-1 fst-italic" t-if="line.data.name">:</span>
+                    </t>
+                    <span t-if="line.data.bank_account"
+                          class="text-muted fst-italic me-1"
+                          t-out="line.data.bank_account"/>
+                    <span class="text-muted fst-italic"
+                          t-out="line.data.name"/>
+                </td>
+                <td t-if="display_currency_columns"
+                    class="o_data_cell o_field_cell o_list_number"
+                    field="amount_currency">
+                    <span t-if="line.data.display_stroked_amount_currency"
+                          class="text-muted text-decoration-line-through"
+                          field="amount_currency"
+                          t-out="formatMonetaryField(line.data.source_amount_currency, line.data.currency_id[0])"/>
+                </td>
+                <td t-if="display_currency_columns" field="currency_id"/>
+                <td class="o_data_cell o_field_cell o_list_number text-end"
+                    field="debit">
+                    <span t-if="line.data.display_stroked_balance and !isMonetaryZero(line.data.debit, line.data.company_currency_id[0])"
+                          class="text-muted text-decoration-line-through"
+                          field="debit"
+                          t-out="formatMonetaryField(line.data.source_debit, line.data.company_currency_id[0])"/>
+                </td>
+                <td class="o_data_cell o_field_cell o_list_number text-end"
+                    field="credit">
+                    <span t-if="line.data.display_stroked_balance and !isMonetaryZero(line.data.credit, line.data.company_currency_id[0])"
+                          class="text-muted text-decoration-line-through"
+                          field="credit"
+                          t-out="formatMonetaryField(line.data.source_credit, line.data.company_currency_id[0])"/>
+                </td>
+                <td class="o_data_cell o_field_cell o_list_number text-end"
+                    field="debit_usd">
+                    <span t-if="line.data.display_stroked_balance and !isMonetaryZero(line.data.debit_usd, line.data.currency_id_dif_statement[0])"
+                          class="text-muted text-decoration-line-through"
+                          field="debit_usd"
+                          t-out="formatMonetaryField(line.data.source_debit_usd, line.data.currency_id_dif_statement[0])"/>
+                </td>
+                <td class="o_data_cell o_field_cell o_list_number text-end"
+                    field="credit_usd">
+                    <span t-if="line.data.display_stroked_balance and !isMonetaryZero(line.data.credit_usd, line.data.currency_id_dif_statement[0])"
+                          class="text-muted text-decoration-line-through"
+                          field="credit_usd"
+                          t-out="formatMonetaryField(line.data.source_credit_usd, line.data.currency_id_dif_statement[0])"/>
+                </td>
+                <td class="empty_trash_cell"/>
+            </tr>
+
+        </xpath>
+    </t>
+
+</templates>

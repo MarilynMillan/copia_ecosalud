@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="pos_show_dual_currency.CashOpeningPopup"
+       t-inherit="point_of_sale.CashOpeningPopup"
+       t-inherit-mode="extension">
+
+        <xpath expr="//div[hasclass('manual-input-cash')]" position="after">
+
+            <div class="d-flex flex-column mb-3 mt-3">
+                <span class="fw-bold mb-2">USD Opening Cash</span>
+
+                <div class="d-flex align-items-center gap-2"
+                     t-on-input="handleInputChangeUSD">
+
+                    <input class="form-control form-control-lg"
+                           type="number"
+                           step="0.01"
+                           t-model.number="state.openingCashUSD"/>
+
+                    <button class="btn btn-secondary"
+                            t-on-click="openDetailsPopupUSD">
+                        <i class="fa fa-calculator"/>
+                    </button>
+
+                </div>
+            </div>
+
+        </xpath>
+
+        <xpath expr="//textarea" position="after">
+
+            <MoneyDetailsPopupUSD
+                t-if="state.displayMoneyDetailsPopupUSD"
+                t-att-manualInputCashCountUSD="manualInputCashCountUSD"
+                t-on-confirm="updateCashOpeningUSD"
+                t-on-discard="closeDetailsPopupUSD"/>
+
+        </xpath>
+
+    </t>
+
+</templates>

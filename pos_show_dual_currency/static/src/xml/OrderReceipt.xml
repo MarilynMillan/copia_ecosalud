@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension" owl="1">
+        
+        <xpath expr="//div[hasclass('pos-receipt-amount')]" position="before">
+            <div classt-if="props.order.get_total_with_tax_sec() > 0" class="pos-receipt-amount pos-receipt-right-align" style="float: right; margin-right: 10px;">
+                <t t-esc="env.pos.format_currency_no_symbol(props.order.get_total_with_tax_sec())"/>
+            </div>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('pos-receipt-change')]" position="before">
+            <div class="pos-receipt-change pos-receipt-right-align" style="float: right; margin-right: 10px;">
+                <t t-esc="env.pos.format_currency_no_symbol(props.order.get_change_sec())"/>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[hasclass('payment-name')]" position="after">
+            <div class="pos-receipt-right-align" style="float: right; margin-right: 10px;">
+                <t t-esc="env.pos.format_currency_no_symbol(paymentline.get_amount() * env.pos.currency_sec_rate)"/>
+            </div>
+        </xpath>
+
+    </t>
+    
+</templates>

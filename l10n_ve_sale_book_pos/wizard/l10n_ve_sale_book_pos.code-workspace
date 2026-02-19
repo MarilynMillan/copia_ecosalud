@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../pos_fiscal_printer"
+		},
+		{
+			"path": "../../pos_igtf_tax"
+		},
+		{
+			"path": "../../pos_show_dual_currency"
+		}
+	]
+}

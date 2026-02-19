@@ -1,0 +1,49 @@
+<section class='oe_container'>
+    <div class='oe_row oe_spaced'>
+        <h2 class='oe_slogan' style='color:#875A7B;'>Homologación Fiscal Venezuela (SENIAT)</h2>
+        <h3 class='oe_slogan'>Integración de IGTF, Retenciones y Auditoría de Documentos</h3>
+        <div class='oe_span12'>
+            <div class='alert alert-info' style='padding:15px; font-size:16px;'>
+                <strong>Desarrollado por:</strong> BlackERPCCS, C.A. | Nayliover Espinoza<br/>
+                <strong>Contacto:</strong> naylioverespinoza@gmail.com
+            </div>
+            <p class='text-justify'>
+                Este módulo aplica la homologación técnica y funcional necesaria para Odoo 17, garantizando el cumplimiento de la Providencia 00071 del SENIAT y mejorando la trazabilidad fiscal.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class='oe_container'>
+    <div class='oe_row oe_spaced'>
+        <div class='oe_span12'>
+            <h3>✅ Implementaciones y Funcionalidades Clave</h3>
+            <ul style='list-style-type: disc;'>
+                <li><b>Integridad del Control Nº:</b> Validación estricta en 'action_post' para prevenir saltos de numeración fiscal, cumpliendo con la Providencia 0071.</li>
+                <li><b>IGTF Automatizado (Pagos):</b> Cálculo automático del 3% y campo obligatorio de aplicación al definir un diario en USD.</li>
+                <li><b>Transparencia Dual:</b>
+                    <ul>
+                        <li><b>Pedidos/Cotizaciones:</b> Inyección de totales convertidos (Bs. $\leftrightarrow$ USD) en el pie de página de 'sale.order'.</li>
+                        <li><b>Facturas:</b> Integración del IGTF pagado directamente en el widget de totales de 'account.move'.</li>
+                    </ul>
+                </li>
+                <li><b>Flujo de Auditoría (Restablecer a Borrador):</b> El botón nativo es reemplazado por un Wizard que obliga al usuario a seleccionar un motivo estandarizado y registra el evento (fecha/hora/usuario) en el Chatter para la trazabilidad legal.</li>
+                <li><b>Acceso Directo a Comprobantes:</b> Botones condicionales en el encabezado de la factura para Aplicar (crear) y Imprimir comprobantes de Retención IVA e ISLR, visibles solo según el estado del documento.</li>
+                <li><b>UX Visual:</b> Ajuste de precisión decimal a 6 dígitos en tasas y mejora estética de la barra lateral.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class='oe_container'>
+    <div class='oe_row oe_spaced'>
+        <div class='oe_span12'>
+            <h3>⚠️ Requisitos Técnicos</h3>
+            <p>Para garantizar la integridad de los cálculos:</p>
+            <ol>
+                <li>Precisión decimal de la moneda USD configurada a 6 dígitos.</li>
+                <li>Módulos: <i>l10n_ve_full</i>, <i>account_dual_currency</i> y <i>account_debit_note</i> son dependencias obligatorias.</li>
+            </ol>
+        </div>
+    </div>
+</section>

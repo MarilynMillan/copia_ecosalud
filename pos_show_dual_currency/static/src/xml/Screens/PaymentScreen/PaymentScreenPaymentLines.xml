@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_show_dual_currency.PaymentScreenPaymentLines" t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('paymentline')]//div[hasclass('payment-amount')]" position="inside">
+            <span class="text-danger fw-bold">
+                / $ <t t-esc="formatLineAmountUsd(line)"/>
+            </span>
+        </xpath>
+    </t>
+
+    <t t-name="pos_show_dual_currency.PaymentScreenStatus" t-inherit="point_of_sale.PaymentScreenStatus" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('total-due')]//div[hasclass('amount')]" position="inside">
+            <div class="text-danger fw-bold fs-2">
+                $ <t t-esc="remainingTextUSD"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('payment-status-change')]//div[hasclass('amount')]" position="inside">
+            <div class="text-danger fw-bold fs-2">
+                $ <t t-esc="changeTextUSD"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

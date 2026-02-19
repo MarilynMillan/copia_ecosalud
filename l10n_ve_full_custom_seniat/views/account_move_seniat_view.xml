@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+        <record id='view_move_form_seniat_igtf' model='ir.ui.view'>
+            <field name='name'>account.move.form.seniat.igtf</field>
+            <field name='model'>account.move</field>
+            <field name='inherit_id' ref='account.view_move_form'/>
+            <field name='arch' type='xml'>
+                
+                <xpath expr="//button[@name='button_draft']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//header" position="inside">
+                    <field name='rela_wh_iva' invisible='1'/>
+                    <field name='islr_wh_doc_id' invisible='1'/>
+                    <field name='wh_iva_state' invisible='1'/>
+                    <field name='wh_islr_state' invisible='1'/>
+
+                    <button name="%(action_open_reset_wizard)d" 
+                            string="Restablecer a Borrador" 
+                            type="action" 
+                            class="btn-secondary"
+                            context="{'default_move_id': id}"
+                            invisible="state not in ('posted', 'cancel')"/>
+
+                    <button name='%(l10n_ve_full_custom_seniat.action_create_open_wh_iva)d' string='Aplicar Retención IVA' type='action' class='oe_highlight' invisible='state != "posted" or rela_wh_iva'/>
+                    <button name='%(l10n_ve_full_custom_seniat.action_create_open_wh_iva)d' string='Ver Retención IVA' type='action' class='btn-secondary' invisible='not rela_wh_iva or wh_iva_state != "draft"'/>
+                    <button name='%(l10n_ve_full_custom_seniat.action_print_wh_iva_from_move)d' string='🖨️ Comprobante IVA' type='action' invisible='wh_iva_state == "draft" or not rela_wh_iva'/>
+
+                    <button name='%(l10n_ve_full_custom_seniat.action_create_open_wh_islr)d' string='Aplicar Retención ISLR' type='action' class='oe_highlight' invisible='state != "posted" or islr_wh_doc_id'/>
+                    <button name='%(l10n_ve_full_custom_seniat.action_create_open_wh_islr)d' string='Aplicar Retención ISLR' type='action' class='btn-secondary' invisible='not islr_wh_doc_id or wh_islr_state != "draft"'/>
+                    <button name='%(l10n_ve_full_custom_seniat.action_print_wh_islr_from_move)d' string='🖨️ Comprobante ISLR' type='action' invisible='wh_islr_state == "draft" or not islr_wh_doc_id'/>
+                </xpath>
+
+                <xpath expr="//button[@name='action_reverse']" position="after">
+                    <button name="%(account_debit_note.action_view_account_move_debit)d" 
+                            string="Nota de débito" 
+                            type="action" 
+                            class="btn-secondary"
+                            invisible="state != 'posted' or move_type not in ('out_invoice', 'in_invoice')"/>
+                </xpath>
+
+                <xpath expr='//field[@name="amount_untaxed_usd"]' position='attributes'>
+                    <attribute name='style'>margin-bottom: 0px \!important;</attribute>
+                </xpath>
+                <xpath expr='//field[@name="amount_tax_usd"]' position='attributes'>
+                    <attribute name='string'>Impuesto IVA Ref</attribute>
+                    <attribute name='style'>margin-bottom: 0px \!important;</attribute>
+                </xpath>
+                <xpath expr='//field[@name="amount_total_usd"]' position='before'>
+                    <field name='igtf_aplicado' string='Impuesto IGTF Ref' widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible='igtf_aplicado == 0' style='margin-bottom: 0px \!important; font-weight: bold;'/>
+                    <field name='total_with_igtf_usd' string='Total Ref' class='oe_subtotal_footer_separator' widget='monetary' options="{'currency_field': 'currency_id_dif'}" invisible='igtf_aplicado == 0'/>
+                </xpath>
+                <xpath expr='//field[@name="amount_total_usd"]' position='attributes'>
+                    <attribute name='invisible'>igtf_aplicado != 0</attribute>
+                </xpath>
+                <xpath expr='//field[@name="amount_residual_usd"]' position='attributes'>
+                    <attribute name='string'>Cantidad por pagar Ref</attribute>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

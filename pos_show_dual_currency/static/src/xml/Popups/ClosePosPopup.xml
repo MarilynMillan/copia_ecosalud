@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="pos_show_dual_currency.ClosePosPopup"
+       t-inherit="point_of_sale.ClosePosPopup"
+       t-inherit-mode="extension">
+
+        <xpath expr="//div[hasclass('close-pos-popup')]" position="inside">
+            <t t-set="trm"
+               t-value="pos.config.show_currency_rate ? 1/pos.config.show_currency_rate : 0"/>
+        </xpath>
+
+        <xpath expr="//div[hasclass('total-orders')]//span[hasclass('amount')]"
+               position="after">
+
+            <t t-if="trm">
+                <span class="text-danger"> / </span>
+                <span class="text-danger"
+                      t-esc="pos.format_currency_ref(ordersDetails.amount / trm)"/>
+            </t>
+
+        </xpath>
+
+        <xpath expr="//div[hasclass('footer')]" position="before">
+
+            <MoneyDetailsPopupUSD
+                t-if="state.displayMoneyDetailsPopupUSD"
+                t-att-manualInputCashCountUSD="manualInputCashCountUSD"
+                t-on-confirm="updateCountedCashUSD"
+                t-on-discard="closeDetailsPopupUSD"/>
+
+        </xpath>
+
+    </t>
+
+</templates>

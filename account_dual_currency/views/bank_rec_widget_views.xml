@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Heredar la vista account_accountant.view_bank_statement_line_kanban_bank_rec_widget -->
+        <record id="account_bank_statement_line_kanban_bank_rec_widget" model="ir.ui.view">
+            <field name="name">Dual Currency: account.bank.statement.line.kanban.bank_rec_widget</field>
+            <field name="model">account.bank.statement.line</field>
+            <field name="inherit_id" ref="account_accountant.view_bank_statement_line_kanban_bank_rec_widget"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount']/.." position="after">
+
+                </xpath>
+                <xpath expr="//field[@name='amount']/../../.." position="before">
+                    <div class="d-flex">
+                                    <!-- Row 0 -->
+                        <div id="row1_col1">
+                        </div>
+                        <div t-attf-id="row1_col2" class="flex-fill text-truncate ms-1">
+                        </div>
+                        <div id="row1_col3" t-att-class="text_amount_class">
+                                <strong style="color: darkblue; font-size: smaller;">
+                                    TRM: <field name="tasa_referencia_statement"/>
+                                </strong>
+                                |
+                                <strong style="color: darkblue; font-size: smaller;">
+                                    $ <field name="amount_usd_statement"/>
+                                </strong>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Heredar la vista account_accountant.view_account_move_line_list_bank_rec_widget -->
+        <record id="account_move_line_list_bank_rec_widget" model="ir.ui.view">
+            <field name="name">Dual Currency: account.move.line.list.bank_rec_widget</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account_accountant.view_account_move_line_list_bank_rec_widget"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_residual']" position="after">
+                    <field name="tax_today"/>
+                    <field name="currency_id_dif" column_invisible="1"/>
+                    <field name="amount_residual_usd" string="Residual USD" options='{"currency_field": "currency_id_dif"}'/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

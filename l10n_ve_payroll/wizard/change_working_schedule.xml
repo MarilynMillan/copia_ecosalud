@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+        <!-- vista formulario para el modelo change.working.schedule -->
+        <record model="ir.ui.view" id="change_working_schedule_form_view">
+            <field name="name">change.working.schedule.form</field>
+            <field name="model">change.working.schedule</field>
+            <field name="arch" type="xml">
+                <form string="Cambiar Horario Laboral">
+                    <group>
+                        <group>
+                            <field name="employee_ids" string="Empleados" widget="many2many_tags" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True, 'no_open': True}"/>
+                            <field name="new_working_schedule" options="{'no_create': True, 'no_create_edit': True, 'no_quick_create': True, 'no_open': True}"/>
+                        </group>
+
+                    </group>
+                    <footer>
+                        <div class="oe_left">
+                            <button string="Cambiar Horario" name="change_working_schedule" type="object"  class="oe_highlight"/>
+                            <button string="Cancelar" special="cancel" type="object" class="oe_link" />
+                        </div>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    <!-- ir.actions.act_window -->
+    <record id="change_working_schedule_action" model="ir.actions.act_window">
+        <field name="name">Cambiar Horario Laboral</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">change.working.schedule</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="change_working_schedule_form_view"/>
+        <field name="target">new</field>
+    </record>
+    <menuitem
+        id="menu_change_working_schedule"
+        name="Cambiar Horario Laboral"
+        parent="hr.menu_hr_employee_payroll"
+        action="change_working_schedule_action"
+        sequence="10"/>
+</odoo>

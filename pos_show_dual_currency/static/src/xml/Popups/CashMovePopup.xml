@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="pos_show_dual_currency.CashMovePopupRefCurrency">
+
+        <div class="popup cash-move-popup modal-content">
+
+            <header class="modal-header justify-content-center">
+                <h4 class="modal-title">
+                    <t t-esc="props.title"/>
+                </h4>
+            </header>
+
+            <main class="modal-body">
+
+                <div class="cash-move d-flex flex-column">
+
+                    <div class="input-amount d-flex mb-3 gap-2">
+
+                        <div class="btn-group flex-fill">
+                            <button t-on-click="() => this.onClickButton('in')"
+                                    class="btn btn-secondary fw-bold"
+                                    t-att-class="{'btn-success': state.inputType === 'in'}">
+                                Cash In
+                            </button>
+
+                            <button t-on-click="() => this.onClickButton('out')"
+                                    class="btn btn-secondary fw-bold"
+                                    t-att-class="{'btn-danger': state.inputType === 'out'}">
+                                Cash Out
+                            </button>
+                        </div>
+
+                        <div class="d-flex align-items-center border rounded p-2 flex-fill">
+
+                            <input type="number"
+                                   step="0.01"
+                                   class="form-control border-0"
+                                   t-model.number="state.inputAmount"
+                                   t-ref="input-amount-ref"
+                                   placeholder="0.00"/>
+
+                            <span class="ms-2 fw-bold"
+                                  t-esc="pos.res_currency_ref.symbol"/>
+                        </div>
+
+                    </div>
+
+                    <div class="form-floating">
+                        <textarea class="form-control"
+                                  style="height: 100px"
+                                  t-model="state.inputReason"
+                                  placeholder="Reason"/>
+                        <label>Reason (USD)</label>
+                    </div>
+
+                    <span t-if="state.inputHasError"
+                          class="alert alert-danger mt-3 text-center small">
+                        <t t-esc="errorMessage"/>
+                    </span>
+
+                </div>
+
+            </main>
+
+            <footer class="modal-footer">
+                <button class="btn btn-primary"
+                        t-on-click="confirm">
+                    Confirm
+                </button>
+                <button class="btn btn-secondary"
+                        t-on-click="cancel">
+                    <t t-esc="props.cancelText"/>
+                </button>
+            </footer>
+
+        </div>
+
+    </t>
+
+</templates>

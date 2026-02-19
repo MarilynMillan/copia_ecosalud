@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="assets_backend_show_dual_currency" name="pos assets show dual currency" inherit_id="point_of_sale.assets">
+        <xpath expr="." position="inside">
+            <!-- OrderWidget.js no es necesario ya que está comentado -->
+            <link rel="stylesheet" href="/pos_show_dual_currency/static/src/css/pos.css"/>
+        </xpath>
+    </template>
+</odoo>

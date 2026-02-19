@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="pos_show_dual_currency.MoneyDetailsPopupUSD">
+
+        <div class="popup money-details modal-content">
+
+            <main class="modal-body">
+
+                <div class="fw-bold fs-4 mb-3 text-center border-bottom pb-2">
+                    Coins / Bills
+                </div>
+
+                <div class="d-flex gap-4">
+
+                    <t t-foreach="[firstHalfMoneyDetailsRef, lastHalfMoneyDetailsRef]"
+                       t-as="moneyList"
+                       t-key="moneyList_index">
+
+                        <div class="flex-fill">
+
+                            <t t-foreach="moneyList"
+                               t-as="moneyValue"
+                               t-key="moneyValue">
+
+                                <div class="d-flex align-items-center mb-2"
+                                     t-on-input="updateMoneyDetailsAmountRef">
+
+                                    <input type="number"
+                                           min="0"
+                                           class="form-control form-control-sm w-50 me-2"
+                                           t-model.number="state.moneyDetailsRef[moneyValue]"/>
+
+                                    <div class="fw-bold">
+                                        <CurrencyAmount
+                                            currency="currency_ref"
+                                            amount="moneyValue"/>
+                                    </div>
+
+                                </div>
+
+                            </t>
+
+                        </div>
+
+                    </t>
+
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-between">
+                    <span class="fs-4 fw-bold">Total</span>
+                    <span class="fs-4 fw-bold text-primary">
+                        <CurrencyAmount
+                            currency="currency_ref"
+                            amount="state.total_ref"/>
+                    </span>
+                </div>
+
+            </main>
+
+            <footer class="modal-footer d-flex justify-content-end gap-2">
+
+                <button class="btn btn-secondary"
+                        t-on-click="discard">
+                    Discard
+                </button>
+
+                <button class="btn btn-primary"
+                        t-on-click="confirm">
+                    Confirm
+                </button>
+
+            </footer>
+
+        </div>
+
+    </t>
+
+</templates>

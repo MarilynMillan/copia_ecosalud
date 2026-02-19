@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id='view_account_move_reset_wizard_form' model='ir.ui.view'>
+        <field name='name'>account.move.reset.wizard.form</field>
+        <field name='model'>account.move.reset.wizard</field>
+        <field name='arch' type='xml'>
+            <form string='Motivo de Anulación o Corrección de Factura'>
+                <sheet>
+                    <div class='alert alert-warning' role='alert' style='margin-bottom: 20px; font-size: 13px; text-align: justify;'>
+                        <h4 class='alert-heading' style='font-weight: bold; font-size: 14px;'>
+                            <i class='fa fa-gavel'/> MARCO LEGAL (Providencia 00071 / COT)
+                        </h4>
+                        <p>
+                            Según la normativa del SENIAT, una vez emitido el Número de Control, el documento es vinculante.
+                            Justifique su operación según el caso:
+                        </p>
+                        <ul style='margin-bottom: 0;'>
+                            <li>
+                                <strong>CASO A (Factura NO Declarada):</strong> Si está en el mes en curso y no ha generado el Libro de Ventas, puede corregir errores de forma (RIF, Precios) bajo estricta auditoría interna.
+                            </li>
+                            <li style='margin-top: 5px; color: #a21010;'>
+                                <strong>CASO B (Factura Declarada):</strong> Si el periodo fiscal cerró o ya se declaró el Libro, 
+                                <u>ESTÁ PROHIBIDO</u> restablecer a borrador. Debe anular la operación mediante una <b>Nota de Crédito</b> (Art. 36 Prov. 0071).
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name='reason_id' 
+                                   widget='selection' 
+                                   placeholder='Seleccione un motivo...'
+                                   string='Motivo de Reverso de Factura'/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                    
+                    <label for='additional_notes'/>
+                    <field name='additional_notes' 
+                           placeholder='Escriba detalles técnicos adicionales obligatorios para la auditoría...' 
+                           style='min-height: 80px; border: 1px solid #ccc; padding: 10px;'/>
+                </sheet>
+                <footer>
+                    <button string='Confirmar Reverso' name='action_confirm_reset' type='object' class='btn-primary'/>
+                    <button string='Cancelar' class='btn-secondary' special='cancel'/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id='action_open_reset_wizard' model='ir.actions.act_window'>
+        <field name='name'>Motivo de Anulación o Corrección</field>
+        <field name='res_model'>account.move.reset.wizard</field>
+        <field name='view_mode'>form</field>
+        <field name='target'>new</field>
+    </record>
+</odoo>

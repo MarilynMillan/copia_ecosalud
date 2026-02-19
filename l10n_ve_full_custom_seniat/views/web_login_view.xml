@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="login_layout_custom_footer" inherit_id="web.login" priority="999">
+            
+            <xpath expr="//form[hasclass('oe_login_form')]" position="inside">
+                
+                <div class="text-center small text-muted" style="margin-top: 25px; border-top: 1px solid #dee2e6; padding-top: 15px; width: 100%; display: block;">
+                    <span style="opacity: 0.8; font-weight: 500;">Sistema de Gestión Empresarial</span><br/>
+                    <strong>Odoo v17.0 Enterprise</strong><br/>
+                    <span style="font-size: 11px;">Powered by Black ERP CCS, C.A.</span>
+                </div>
+
+            </xpath>
+        </template>
+    </data>
+</odoo>

@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <data>
+        <record id="extra_account_journal_venezuela" model="ir.ui.view">
+            <field name="name">Extra account.journal.form Venezuela</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='bank_account']//group" position="inside">
+                    <group string="Información IVA e ISLR">
+                        <field name="is_iva_journal" widget="boolean_toggle" string="Es Diario de IVA"/>
+                        <field name="is_islr_journal" widget="boolean_toggle" string="Es Diario de ISLR"/>
+                        <field name="default_iva_account"  invisible="not is_iva_journal" required="is_iva_journal"/>
+                        <field name="default_islr_account" invisible="not is_islr_journal" required="is_islr_journal"/>
+                    </group>
+                    <group string="Información archivo TXT" invisible="type != 'bank'">
+                        <field name="name_file_txt"/>
+                    </group>
+                </xpath>
+                <xpath expr="//page[@name='bank_account']//field[@name='code']" position="after">
+                    <field name="eliminar_impuestos" widget="boolean_toggle" string="Eliminar impuestos"/>
+                    <field name="permitir_itf" widget="boolean_toggle"/>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                    <page string="Secuencia Nro Control" name="sequence_control" invisible="type != 'sale'">
+                        <group>
+                            <group>
+                                <field name="sequence_nro_ctrl_next"/>
+                                <field name="nro_ctrl_desde" required="sequence_nro_ctrl_id"/>
+                                <field name="nro_ctrl_hasta" required="sequence_nro_ctrl_id"/>
+                                <field name="sequence_nro_ctrl_id" options='{"no_create": True, "no_open": False, "no_create_edit": True}'/>
+                                <field name="credit_note_journal_id" options='{"no_create": True, "no_open": False, "no_create_edit": True}'/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

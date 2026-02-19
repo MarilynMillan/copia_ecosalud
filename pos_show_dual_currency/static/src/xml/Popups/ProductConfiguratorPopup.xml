@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="pos_show_dual_currency.RadioProductAttribute">
+        <div class="configurator_radio">
+            <div class="d-flex flex-column gap-2">
+                <t t-foreach="props.values" t-as="value" t-key="value.id">
+                    <div class="attribute-name-cell d-flex align-items-center gap-2">
+                        <input type="radio" 
+                               t-model="state.selected_value" 
+                               t-att-name="props.attribute.id"
+                               t-attf-id="{{ props.attribute.id }}_{{ value.id }}" 
+                               t-att-value="value.id"
+                               class="form-check-input mt-0"/>
+                        
+                        <label t-attf-for="{{ props.attribute.id }}_{{ value.id }}" class="form-check-label flex-grow-1">
+                            <t t-esc="value.name"/>
+                            
+                            <t t-if="value.price_extra">
+                                <span class="price-extra ms-2 text-muted">
+                                    (<t t-esc="pos.format_currency(value.price_extra)"/> 
+                                    <span class="text-danger"> / </span>
+                                    <span class="badge rounded-pill bg-danger text-white">
+                                        $ <t t-esc="pos.format_currency_no_symbol(value.price_extra * pos.config.show_currency_rate)"/>
+                                    </span>)
+                                </span>
+                            </t>
+                        </label>
+                    </div>
+                    
+                    <div t-if="value.id == state.selected_value &amp;&amp; value.is_custom" class="custom-value-cell ms-4 mt-1">
+                        <input class="form-control form-control-sm" 
+                               type="text" 
+                               t-model="state.custom_value" 
+                               placeholder="Custom value..."/>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="pos_show_dual_currency.SelectProductAttribute">
+        <div class="d-flex flex-column gap-2">
+            <t t-set="is_custom" t-value="false"/>
+
+            <select class="form-select configurator_select" t-model="state.selected_value">
+                <option t-foreach="props.values" t-as="value" t-key="value.id" t-att-value="value.id">
+                    <t t-set="is_custom" t-value="is_custom || (value.is_custom &amp;&amp; value.id == state.selected_value)"/>
+                    <t t-esc="value.name"/>
+                    <t t-if="value.price_extra">
+                         + <t t-esc="pos.format_currency(value.price_extra)"/> / $ <t t-esc="pos.format_currency_no_symbol(value.price_extra * pos.config.show_currency_rate)"/>
+                    </t>
+                </option>
+            </select>
+
+            <input class="form-control form-control-sm custom_value" 
+                   t-if="is_custom" 
+                   type="text" 
+                   t-model="state.custom_value" 
+                   placeholder="Enter custom value..."/>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id='view_account_payment_register_form_seniat' model='ir.ui.view'>
+        <field name='name'>account.payment.register.form.seniat</field>
+        <field name='model'>account.payment.register</field>
+        <field name='inherit_id' ref='account_dual_currency.account_payment_register_dual_currency'/>
+        <field name='arch' type='xml'>
+
+            <xpath expr='//field[@name="aplicar_igtf_divisa"]' position='attributes'>
+                <attribute name='readonly'>currency_id != company_currency_id</attribute>
+                <attribute name='force_save'>1</attribute>
+            </xpath>
+
+            <xpath expr='//field[@name="amount"]' position='after'>
+                <field name='company_currency_id' invisible='1'/>
+                <field name='amount_bs_reference_custom' 
+                       string='Importe Ref. (Bs)'
+                       invisible='currency_id == company_currency_id'
+                       force_save='1'/>
+            </xpath>
+
+            <xpath expr='//field[@name="mount_igtf"]' position='after'>
+                <field name='igtf_bs_reference_custom' 
+                       string='IGTF Ref. (Bs)'
+                       invisible='currency_id == company_currency_id'
+                       force_save='1'/>
+            </xpath>
+
+            <xpath expr='//field[@name="amount_total_pagar"]' position='after'>
+                 <div class='o_td_label'>
+                        <label for='total_bs_reference_custom' string='Total Pagar Ref. (Bs)' invisible='currency_id == company_currency_id'/>
+                    </div>
+                <field name='total_bs_reference_custom' 
+                       nolabel='1'
+                       invisible='currency_id == company_currency_id'
+                       style='font-weight: bold;'
+                       force_save='1'/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="extra_dual_currency_setting" model="ir.ui.view">
+            <field name="name">Extra dual currency setting</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//block[@name='main_currency_setting_container']" position="inside">
+                            <div class="col-12 col-lg-6 o_setting_box" id="dual_currency">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Dualidad de Moneda</span>
+                                    <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." aria-label="Values set here are company-specific." groups="base.group_multi_company" role="img"/>
+                                    <div class="text-muted">
+                                        Moneda en Dualidad
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="row mt16">
+                                            <label for="currency_id_dif" class="col-lg-3 o_light_label"/>
+                                            <field name="currency_id_dif" options="{'no_create_edit': True, 'no_open': True}" context="{'active_test': False}"/>
+                                            <field name="group_multi_currency" invisible="1"/>
+                                        </div>
+                                        <div class="mt8">
+                                            <button type="action" name="%(base.action_currency_form)d" string="Monedas" class="btn-link" icon="fa-arrow-right"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                </xpath>
+                <xpath expr="//field[@name='currency_exchange_journal_id']/.." position="before">
+                    <div class="mt8">
+                        <div class="content-group" id="automatic_diff">
+                            <div>
+                                <field name="automatic_diff_entry"/>
+                                <label for="automatic_diff_entry"/>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+                <xpath expr="//block[@id='invoicing_settings']" position="inside">
+                    <setting company_dependent="1" help="Cierre automático de la Factura Clientes con tolerancia" id="automatic_closing">
+                                <field name="automatic_closing"/>
+                                <div class="content-group mt-2" invisible="not automatic_closing">
+                                    <div class="row">
+                                        <label for="closing_tolerance_usd" class="col-lg-4 o_light_label"/>
+                                        <field name="closing_tolerance_usd"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="closing_tolerance_porc" class="col-lg-4 o_light_label"/>
+                                        <field name="closing_tolerance_porc"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="closing_journal_id" class="col-lg-4 o_light_label"/>
+                                        <field name="closing_journal_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="closing_account_id" class="col-lg-4 o_light_label"/>
+                                        <field name="closing_account_id"/>
+                                    </div>
+
+                                </div>
+                    </setting>
+                </xpath>
+            </field>
+        </record>
+        <!-- hacer herencia de stock_accountant.res_config_settings_view_form -->
+        <record id="extra_dual_currency_setting_cost" model="ir.ui.view">
+            <field name="name">Extra dual currency setting cost</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="stock_accountant.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//setting[@id='general_accounts']" position="after">
+                    <setting string="Retorno de Productos a precio actual" id="general_accounts_dual_currency">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="return_actual_cost" class="col-lg-4 o_light_label"/>
+                                <field name="return_actual_cost"/>
+                            </div>
+                        </div>
+                    </setting>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

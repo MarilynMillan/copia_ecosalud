@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_seniat_payment" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.seniat.payment</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//block[@name='quotation_order_setting_container']" position="after">
+                
+                <block title="Datos de Pago en Reportes (Fiscal)" id="seniat_fiscal_settings">
+                    <setting id="seniat_payment_info" help="Esta información aparecerá a la izquierda de los totales en el PDF.">
+                        <div class="content-group">
+                            <div class="row mt16">
+                                <label for="payment_info_fiscal" string="Bancos / Pago Móvil" class="col-lg-3 o_light_label"/>
+                                <field name="payment_info_fiscal" placeholder="Ej: Banesco 0134..."/>
+                            </div>
+                            <div class="row mt16">
+                                <label for="payment_qr_fiscal" string="Código QR" class="col-lg-3 o_light_label"/>
+                                <field name="payment_qr_fiscal" widget="image" class="oe_avatar"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

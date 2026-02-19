@@ -1,0 +1,24 @@
+# Traducción de Odoo - Sobrescritura de Términos
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. module: account
+#: model:ir.model.fields,field_description:account.field_account_move__amount_untaxed
+#: model:ir.model.fields,field_description:account.field_account_payment__amount_untaxed
+msgid "Untaxed Amount"
+msgstr "Sub-Total"
+
+#. module: account
+#: model:ir.model.fields,field_description:account.field_account_move_line__price_subtotal
+msgid "Subtotal"
+msgstr "Sub-Total"
+
+#. module: base
+msgid "Base"
+msgstr "Sub-Total"
+
+#. module: account
+msgid "Base Amount"
+msgstr "Sub-Total"
