@@ -1,38 +1,40 @@
-odoo.define('1010_pos_dual_currency.SaleOrderRow', function (require) {
-    'use strict';
+/** @odoo-module */
 
-    const SaleOrderRow = require('pos_sale.SaleOrderRow');
-    const Registries = require('point_of_sale.Registries');
-    const utils = require('web.utils');
-    const SaleOrderRowUSD = (SaleOrderRow) =>
-        class extends SaleOrderRow {
-            get total_ref() {
-                const trm = 1/this.env.pos.config.show_currency_rate
-                if (trm!=0){
-                    return this.env.pos.format_currency_ref(this.order.amount_total/trm);
-                }else{
-                    return this.env.pos.format_currency_ref(this.order.amount_total);
-                }
+import { SaleOrderRow } from "@pos_sale/app/screens/sale_order_list/sale_order_row/sale_order_row";
+import { patch } from "@web/core/utils/patch";
+import { floatIsZero } from "@web/core/utils/numbers";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
 
-            }
-            get showAmountUnpaid_ref() {
-                const difference = this.order.amount_total - this.order.amount_unpaid
-                const isFullAmountUnpaid = utils.float_is_zero(Math.abs(difference), this.env.pos.show_currency.decimal_places);
-                const trm = 1/this.env.pos.config.show_currency_rate
-                if (trm!=0){
-                    isFullAmountUnpaid = utils.float_is_zero(Math.abs(difference/trm), this.env.pos.show_currency.decimal_places);
-                    return !isFullAmountUnpaid && !utils.float_is_zero(this.order.amount_unpaid * trm, this.env.pos.show_currency.decimal_places);
-                }else{
-                    return !isFullAmountUnpaid && !utils.float_is_zero(this.order.amount_unpaid, this.env.pos.show_currency.decimal_places);
-                }
+patch(SaleOrderRow.prototype, {
+    setup() {
+        super.setup();
+        this.pos = usePos();
+    },
+    get total_ref() {
+        const trm = 1 / this.pos.config.show_currency_rate;
+        if (trm !== 0) {
+            return this.pos.format_currency_ref(this.props.order.amount_total / trm);
+        } else {
+            return this.pos.format_currency_ref(this.props.order.amount_total);
+        }
+    },
+    get showAmountUnpaid_ref() {
+        const order = this.props.order;
+        const difference = order.amount_total - order.amount_unpaid;
 
-            }
+        // Assuming res_currency_ref is set in PosStore via models.js
+        const currency = this.pos.res_currency_ref || this.pos.currency;
+        const decimalPlaces = currency.decimal_places;
 
+        let isFullAmountUnpaid = floatIsZero(Math.abs(difference), decimalPlaces);
 
-    };
+        const trm = 1 / this.pos.config.show_currency_rate;
 
-
-    Registries.Component.extend(SaleOrderRow, SaleOrderRowUSD);
-
-    return SaleOrderRow;
+        if (trm !== 0) {
+            isFullAmountUnpaid = floatIsZero(Math.abs(difference / trm), decimalPlaces);
+            return !isFullAmountUnpaid && !floatIsZero(order.amount_unpaid * trm, decimalPlaces);
+        } else {
+            return !isFullAmountUnpaid && !floatIsZero(order.amount_unpaid, decimalPlaces);
+        }
+    }
 });

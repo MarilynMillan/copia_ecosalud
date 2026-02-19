@@ -1,51 +1,35 @@
-odoo.define('1010_pos_dual_currency.OrderlineDetails', function (require) {
-    'use strict';
+/** @odoo-module */
 
-    const OrderlineDetails = require('point_of_sale.OrderlineDetails');
-    const Registries = require('point_of_sale.Registries');
-    const { format } = require('web.field_utils');
-    const { round_precision: round_pr } = require('web.utils');
+import { OrderlineDetails } from "@point_of_sale/app/screens/ticket_screen/orderline_details/orderline_details";
+import { patch } from "@web/core/utils/patch";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
 
-    /**
-     * @props {pos.order.line} line
-     */
-     const OrderlineDetailsUSD = (OrderlineDetails) =>
-        class extends OrderlineDetails {
+patch(OrderlineDetails.prototype, {
+    setup() {
+        super.setup();
+        this.pos = usePos();
+    },
+    get totalPrice_ref() {
+        const rate = this.pos.config.show_currency_rate;
+        const trm = rate ? 1 / rate : 0;
+        const amount = this.props.line.price_subtotal_incl || 0;
 
-        get totalPrice_ref() {
-            const trm = 1/this.env.pos.config.show_currency_rate;
-            if (trm!=0){
-                return this.env.pos.format_currency_ref(this.line.totalPrice/trm);
-                }
-            else{
-                return this.env.pos.format_currency_ref(this.line.totalPrice);
-                }
-
+        if (trm !== 0) {
+            return this.pos.format_currency_ref(amount / trm);
+        } else {
+            return this.pos.format_currency_ref(amount);
         }
+    },
 
-        get unitPrice_ref() {
-            const trm = 1/this.env.pos.config.show_currency_rate;
-            if (trm!=0){
-                return this.env.pos.format_currency_ref(this.line.unitPrice/trm);
-                }
-            else{
-                return this.env.pos.format_currency_ref(this.line.unitPrice);
-                }
+    get unitPrice_ref() {
+        const rate = this.pos.config.show_currency_rate;
+        const trm = rate ? 1 / rate : 0;
+        const amount = this.props.line.price_unit || 0;
+
+        if (trm !== 0) {
+            return this.pos.format_currency_ref(amount / trm);
+        } else {
+            return this.pos.format_currency_ref(amount);
         }
-        get pricePerUnit() {
-            const trm = 1/this.env.pos.config.show_currency_rate;
-            if (trm!=0){
-                return ` ${this.unit} at ${this.unitPrice} - ${this.unitPrice_ref} / ${this.unit}`;
-            }else{
-                return ` ${this.unit} at ${this.unitPrice} / ${this.unit}`;
-            }
-
-        }
-
-    };
-
-
-    Registries.Component.extend(OrderlineDetails, OrderlineDetailsUSD);
-
-    return OrderlineDetails;
+    }
 });
