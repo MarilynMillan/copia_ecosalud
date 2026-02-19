@@ -1,31 +1,17 @@
-odoo.define('1010_pos_dual_currency.TicketScreen', function (require) {
-    'use strict';
+/** @odoo-module */
 
-    const { Order } = require('point_of_sale.models');
-    const TicketScreen = require('point_of_sale.TicketScreen');
-    const Registries = require('point_of_sale.Registries');
-    const IndependentToOrderScreen = require('point_of_sale.IndependentToOrderScreen');
-    const NumberBuffer = require('point_of_sale.NumberBuffer');
-    const { useListener } = require("@web/core/utils/hooks");
-    const { parse } = require('web.field_utils');
+import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_screen";
+import { patch } from "@web/core/utils/patch";
 
-    const { onMounted, onWillUnmount, useState } = owl;
+patch(TicketScreen.prototype, {
+    getTotalUSD(order) {
+        const rate = this.pos.config.show_currency_rate;
+        const trm = rate ? 1 / rate : 0;
 
-    const TicketScreenUSD = (TicketScreen) =>
-    class extends TicketScreen {
-
-        getTotalUSD(order) {
-            const trm = 1/this.env.pos.config.show_currency_rate;
-            if (trm!=0){
-                return this.env.pos.format_currency_ref(order.get_total_with_tax()/trm);
-                }
-            else{
-                return this.env.pos.format_currency_ref(order.get_total_with_tax());
-                }
-            }
-    };
-
-    Registries.Component.extend(TicketScreen, TicketScreenUSD);
-
-    return TicketScreen;
+        if (trm !== 0) {
+            return this.pos.format_currency_ref(order.get_total_with_tax() / trm);
+        } else {
+            return this.pos.format_currency_ref(order.get_total_with_tax());
+        }
+    }
 });
