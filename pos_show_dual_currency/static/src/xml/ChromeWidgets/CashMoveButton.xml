@@ -8,8 +8,8 @@
     </t>
 
     <t t-name="CashInOutRefCurrencyChrome" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
-        <CashMoveButton position="after">
+        <xpath expr="//CashierName" position="before">
             <CashMoveButtonRefCurrency t-if="showCashMoveButton()"/>
-        </CashMoveButton>
+        </xpath>
     </t>
 </templates>
