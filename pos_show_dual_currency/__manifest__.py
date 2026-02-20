@@ -21,7 +21,7 @@
     ],
 
     'assets': {
-        'point_of_sale._assets_pos': [
+        'point_of_sale.assets': [
             'pos_show_dual_currency/static/src/css/pos.css',
             'pos_show_dual_currency/static/src/js/**/*',
             'pos_show_dual_currency/static/src/xml/**/*.xml',

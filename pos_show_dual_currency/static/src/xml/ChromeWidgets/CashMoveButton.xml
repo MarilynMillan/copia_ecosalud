@@ -7,9 +7,9 @@
         </div>
     </t>
 
-    <t t-name="CashInOutRefCurrencyChrome" t-inherit="point_of_sale.Chrome" t-inherit-mode="extension">
-        <CashMoveButton position="after">
-            <CashMoveButtonRefCurrency t-if="showCashMoveButton()"/>
-        </CashMoveButton>
+    <t t-name="CashInOutRefCurrencyChrome" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//CashMoveButton" position="after">
+            <CashMoveButtonRefCurrency t-if="showCashMoveButton"/>
+        </xpath>
     </t>
 </templates>
