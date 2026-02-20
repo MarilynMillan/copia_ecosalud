@@ -9,7 +9,7 @@
             </div>
         </xpath>
         
-        <xpath expr="//div[hasclass('pos-receipt-change')]" position="before">
+        <xpath expr="//div[hasclass('change')]" position="before">
             <div class="pos-receipt-change pos-receipt-right-align" style="float: right; margin-right: 10px;">
                 <t t-esc="env.pos.format_currency_no_symbol(props.order.get_change_sec())"/>
             </div>
