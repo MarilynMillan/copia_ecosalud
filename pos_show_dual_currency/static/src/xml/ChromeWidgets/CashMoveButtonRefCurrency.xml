@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="CashMoveButtonRefCurrency" owl="1">
+        <div class="oe_status" t-on-click="onClickUSD">
+            <div class="oe_icon">
+                <i class="fa fa-money" role="img" aria-label="Cash Move USD" title="Cash Move USD"/>
+            </div>
+            <span class="oe_label">Cash Move USD</span>
+        </div>
+    </t>
+</templates>

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-
     <t t-name="TRM" owl="1">
         <div class="oe_status">
-            <span>TRM $: <span t-esc="trm"/></span>
+            <span style="font-weight: bold; margin-right: 5px;">TRM:</span>
+            <span t-esc="trm"/>
         </div>
     </t>
-
 </templates>
