@@ -1,17 +1,30 @@
-/** @odoo-module **/
+/** @odoo-module */
 
 import { PaymentScreenStatus } from "@point_of_sale/app/screens/payment_screen/payment_status/payment_status";
 import { patch } from "@web/core/utils/patch";
 
 patch(PaymentScreenStatus.prototype, {
     get remainingTextUSD() {
-        const due = this.props.order.get_due();
-        const rate = this.pos.config.show_currency_rate;
-        return this.pos.format_currency_no_symbol(due > 0 ? (due * rate) : 0);
+        const order = this.props.order;
+        if (!order) return "";
+        const rate = this.env.services.pos.config.show_currency_rate;
+        if (!rate) return "";
+        const remaining = order.get_due() > 0 ? order.get_due() : 0;
+        return this.env.services.pos.format_currency_no_symbol(remaining * rate);
     },
     get changeTextUSD() {
-        const change = this.props.order.get_change();
-        const rate = this.pos.config.show_currency_rate;
-        return this.pos.format_currency_no_symbol(change * rate);
+        const order = this.props.order;
+        if (!order) return "";
+        const rate = this.env.services.pos.config.show_currency_rate;
+        if (!rate) return "";
+        const change = order.get_change();
+        return this.env.services.pos.format_currency_no_symbol(change * rate);
+    },
+    get totalDueTextUSD() {
+        const order = this.props.order;
+        if (!order) return "";
+        const rate = this.env.services.pos.config.show_currency_rate;
+        if (!rate) return "";
+        return this.env.services.pos.format_currency_no_symbol(order.get_total_with_tax() * rate);
     }
 });
