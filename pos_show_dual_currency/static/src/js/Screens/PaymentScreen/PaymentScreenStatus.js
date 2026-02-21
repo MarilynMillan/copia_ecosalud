@@ -1,22 +1,23 @@
-/** @odoo-module **/
+/** @odoo-module */
 
-import { PaymentScreenStatus } from "@point_of_sale/app/screens/payment_screen/payment_status/payment_status";
-import { patch } from "@web/core/utils/patch";
+import { PaymentScreenStatus } from "@point_of_sale/app/screens/payment_screen/payment_screen_status/payment_screen_status";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
 
-patch(PaymentScreenStatus.prototype, {
+export class PaymentScreenStatusDual extends PaymentScreenStatus {
+    static template = "PaymentScreenStatus";
+
     setup() {
         super.setup();
         this.pos = usePos();
-    },
-    get remainingTextUSD() {
-        const due = this.props.order.get_due();
-        const rate = this.pos.config.show_currency_rate;
-        return this.pos.format_currency_no_symbol(due > 0 ? (due * rate) : 0);
-    },
-    get changeTextUSD() {
-        const change = this.props.order.get_change();
-        const rate = this.pos.config.show_currency_rate;
-        return this.pos.format_currency_no_symbol(change * rate);
     }
-});
+
+    get remainingTextUSD() {
+        return this.pos.format_currency_no_symbol(
+            this.props.order.get_due() > 0 ? (this.props.order.get_due() * this.pos.config.show_currency_rate) : 0
+        );
+    }
+
+    get changeTextUSD() {
+        return this.pos.format_currency_no_symbol(this.props.order.get_change() * this.pos.config.show_currency_rate);
+    }
+}

@@ -10,7 +10,7 @@ class PosOrder(models.Model):
                                          store=False)
     session_rate = fields.Float(string="Session Rate", store=True,
                                 related='session_id.tax_today',
-                                tracking=True, digits='Dual_Currency_rate')
+                                tracking=True, digits='Dual_Currency_rate')  # ✅ CORREGIDO
 
     amount_tax_ref = fields.Float(string='Ref Taxes', compute='_compute_amount_all_ref')
     amount_total_ref = fields.Float(string='Ref Total', compute='_compute_amount_all_ref')
@@ -24,7 +24,6 @@ class PosOrder(models.Model):
         for order in self:
             if order.session_rate != 0:
                 order.margin_ref = order.margin / order.session_rate
-
             else:
                 order.margin = 0
 
@@ -43,10 +42,3 @@ class PosOrder(models.Model):
                 order.amount_tax_ref = 0
                 order.amount_total_ref = 0
                 order.sum_amount_total_ref = 0
-
-    def button_dummy(self):
-        """
-        Este método no realiza ninguna operación, 
-        se usa para refrescar los campos computados en la vista.
-        """
-        return True

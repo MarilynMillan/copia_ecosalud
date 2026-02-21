@@ -2,19 +2,20 @@
 
 import { Component } from "@odoo/owl";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
-import { Navbar } from "@point_of_sale/app/navbar/navbar";
+import { formatCurrency } from "@web/core/currency";
 
 export class TRM extends Component {
     static template = "TRM";
+    
     setup() {
         this.pos = usePos();
     }
+
     get trm() {
-        const rate = this.pos.config.show_currency_rate;
-        if (!rate) return "N/A";
-        return this.pos.format_currency_no_symbol(1 / rate);
+        return formatCurrency(
+            1 / this.pos.config.show_currency_rate,
+            this.pos.currency.name,
+            this.pos.currency.decimal_places
+        );
     }
 }
-
-// Register TRM in Navbar components
-Navbar.components = { ...Navbar.components, TRM };
