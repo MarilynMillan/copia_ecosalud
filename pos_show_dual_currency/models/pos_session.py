@@ -69,31 +69,36 @@ class PosSession(models.Model):
         if message:
             self.message_post(body=message)
 
-    def _load_pos_data(self, data):
-        loaded_data = super()._load_pos_data(data)
+    def _loader_params_res_currency_ref(self):
         currency_id = self.company_id.currency_id.id
         if self.ref_me_currency_id.id:
             currency_id = self.ref_me_currency_id.id
         else:
             if self.config_id.show_currency:
-                # Evitamos escrituras directas en lectura si es posible, pero mantenemos lógica original
-                if not self.ref_me_currency_id:
-                    self.ref_me_currency_id = self.config_id.show_currency.id
+                self.ref_me_currency_id = self.config_id.show_currency.id
                 currency_id = self.config_id.show_currency.id
             else:
                 if self.company_id.currency_id_dif:
-                    if not self.config_id.show_currency:
-                        self.config_id.show_currency = self.company_id.currency_id_dif.id
-                    if not self.ref_me_currency_id:
-                        self.ref_me_currency_id = self.company_id.currency_id_dif.id
+                    self.config_id.show_currency = self.company_id.currency_id_dif.id
+                    self.ref_me_currency_id = self.company_id.currency_id_dif.id
                     currency_id = self.company_id.currency_id_dif.id
 
-        domain = [('id', '=', currency_id)]
-        fields_list = ['id', 'name', 'symbol', 'position', 'rounding', 'rate', 'decimal_places']
-        currency_ref = self.env['res.currency'].search_read(domain, fields_list)
-        
-        loaded_data['res_currency_ref'] = currency_ref[0] if currency_ref else False
-        return loaded_data
+        return {
+            'search_params': {
+                'domain': [('id', '=', currency_id)],
+                'fields': ['id', 'name', 'symbol', 'position', 'rounding', 'rate', 'decimal_places'],
+            },
+        }
+
+    def _get_pos_ui_res_currency_ref(self, params):
+        res_currency = self.env['res.currency'].search_read(**params['search_params'])
+        return res_currency[0]
+
+    def _pos_data_process(self, loaded_data):
+        params = self._loader_params_res_currency_ref()
+        currency_ref = self._get_pos_ui_res_currency_ref(params)
+        loaded_data['res_currency_ref'] = currency_ref
+        super(PosSession, self)._pos_data_process(loaded_data)
 
     def try_cash_in_out_ref_currency(self, _type, amount, reason, extras, currency_ref):
         sign = 1 if _type == 'in' else -1
@@ -118,8 +123,8 @@ class PosSession(models.Model):
             message_content.append(f'- Reason: {reason}')
         self.message_post(body='<br/>\n'.join(message_content))
 
-    #@api.depends('config_id', 'payment_method_ids')
-    """def _compute_cash_all(self):
+    @api.depends('config_id', 'payment_method_ids')
+    def _compute_cash_all(self):
         super(PosSession, self)._compute_cash_all()
         for session in self:
             session.me_ref_cash_journal_id = False
@@ -127,26 +132,7 @@ class PosSession(models.Model):
                 lambda p: p.is_cash_count and p.currency_id == session.ref_me_currency_id)[:1].journal_id
             if not cash_journal_ref:
                 continue
-            session.me_ref_cash_journal_id = cash_journal_ref"""
-    @api.depends('config_id','payment_method_ids', 'ref_me_currency_id')
-    def _compute_cash_all(self):
-        """
-        En Odoo 17, _compute_cash_all no existe en el core. 
-        Mantenemos el nombre para tu lógica personalizada pero eliminamos el super.
-        """
-        for session in self:
-            session.me_ref_cash_journal_id = False
-            # Verificamos si existe la moneda de referencia
-            if session.ref_me_currency_id:
-                # Buscamos el método de pago que sea efectivo (is_cash_count) 
-                # y cuya moneda sea la de referencia.
-                cash_method = session.payment_method_ids.filtered(
-                    lambda p: p.is_cash_count and (p.journal_id.currency_id == session.ref_me_currency_id or p.currency_id == session.ref_me_currency_id)
-                )
-                
-                if cash_method:
-                    # Asignamos el diario vinculado a ese método de pago
-                    session.me_ref_cash_journal_id = cash_method[0].journal_id
+            session.me_ref_cash_journal_id = cash_journal_ref
 
     def get_closing_control_data(self):
         closing_control_data = super(PosSession, self).get_closing_control_data()
@@ -433,21 +419,11 @@ class PosSession(models.Model):
         bank_payment_method_diffs = bank_payment_method_diffs or {}
         return self.action_pos_session_close_ref(balancing_account, amount_to_balance, bank_payment_method_diffs)
 
-    @api.model
-    def _load_pos_data_models(self, config_id):
-        models = super()._load_pos_data_models(config_id)
-        
-        # Agregar campos a pos.session
-        session_model = next((m for m in models if m['model'] == 'pos.session'), None)
-        if session_model:
-            session_model['fields'].append('cash_register_balance_start_mn_ref')
-            
-        # Agregar campos a pos.payment.method
-        pm_model = next((m for m in models if m['model'] == 'pos.payment.method'), None)
-        if pm_model:
-            pm_model['fields'].extend(['is_cash_count', 'use_payment_terminal', 'split_transactions', 'type', 'currency_id'])
-            
-        return models
+    def _loader_params_pos_session(self):
+        search_params = super(PosSession, self)._loader_params_pos_session()
+        fields = search_params['search_params']['fields']
+        fields.append('cash_register_balance_start_mn_ref')
+        return search_params
 
     def action_pos_session_open(self):
         for session in self.filtered(lambda session: session.state == 'opening_control'):
@@ -463,6 +439,14 @@ class PosSession(models.Model):
         for rec in self:
             rec.tax_today = 1 / rec.config_id.show_currency_rate if rec.config_id.show_currency_rate > 0 else 1
 
+    def _loader_params_pos_payment_method(self):
+        return {
+            'search_params': {
+                'domain': ['|', ('active', '=', False), ('active', '=', True)],
+                'fields': ['name', 'is_cash_count', 'use_payment_terminal', 'split_transactions', 'type','currency_id'],
+                'order': 'is_cash_count desc, id',
+            },
+        }
 
     def _create_cash_statement_lines_and_cash_move_lines(self, data):
         # Create the split and combine cash statement lines and account move lines.
@@ -578,3 +562,4 @@ class PosSession(models.Model):
         data['payment_to_receivable_lines'] = payment_to_receivable_lines
         print('data para linea en banco', data)
         return data
+

@@ -1,69 +1,55 @@
-/** @odoo-module **/
+/** @odoo-module */
 
-import { CashOpeningPopup } from "@point_of_sale/app/navbar/cash_opening_popup/cash_opening_popup";
-import { patch } from "@web/core/utils/patch";
+import { CashOpeningPopup } from "@point_of_sale/app/utils/cash_opening_popup";
 import { useService } from "@web/core/utils/hooks";
-import { MoneyDetailsPopupUSD } from "./MoneyDetailsPopup";
-import { usePos } from "@point_of_sale/app/store/pos_hook";
+import { useState } from "@odoo/owl";
 
-CashOpeningPopup.components = { ...CashOpeningPopup.components, MoneyDetailsPopupUSD };
+export class CashOpeningPopupUSD extends CashOpeningPopup {
+    static template = "CashOpeningPopup";
 
-patch(CashOpeningPopup.prototype, {
     setup() {
         super.setup();
-
-        this.orm = useService("orm");
-        this.pos = usePos();
+        this.rpc = useService("rpc");
         this.manualInputCashCountUSD = null;
-
-        const pos = this.pos;
-
-        Object.assign(this.state, {
-            openingCashUSD: pos.pos_session.cash_register_balance_start_mn_ref || 0,
+        this.state = useState({
+            openingCash: this.pos.pos_session.cash_register_balance_start || 0,
+            openingCashUSD: this.pos.pos_session.cash_register_balance_start_mn_ref || 0,
             displayMoneyDetailsPopupUSD: false,
         });
-    },
+    }
 
     async confirm() {
-        const pos = this.pos;
-
-        // Guardar en objeto local
-        pos.pos_session.cash_register_balance_start_mn_ref = this.state.openingCashUSD;
-
-        await this.orm.call("pos.session", "set_cashbox_pos_usd", [
-            pos.pos_session.id,
-            this.state.openingCashUSD,
-            this.state.notes || "",
-        ]);
-
-        return super.confirm();
-    },
+        this.pos.pos_session.cash_register_balance_start_mn_ref = this.state.openingCashUSD;
+        await this.rpc({
+            model: 'pos.session',
+            method: 'set_cashbox_pos_usd',
+            args: [this.pos.pos_session.id, this.state.openingCashUSD, this.state.notes_ref],
+        });
+        super.confirm();
+    }
 
     openDetailsPopupUSD() {
         this.state.openingCashUSD = 0;
         this.state.displayMoneyDetailsPopupUSD = true;
-    },
+    }
 
     closeDetailsPopupUSD() {
         this.state.displayMoneyDetailsPopupUSD = false;
-    },
+    }
 
     updateCashOpeningUSD({ total_ref, moneyDetailsNotesRef }) {
         this.state.openingCashUSD = total_ref;
-
         if (moneyDetailsNotesRef) {
-            this.state.notes = (this.state.notes || "") + moneyDetailsNotesRef;
+            this.state.notes += moneyDetailsNotesRef;
         }
-
         this.manualInputCashCountUSD = false;
         this.closeDetailsPopupUSD();
-    },
+    }
 
     handleInputChangeUSD() {
         this.manualInputCashCountUSD = true;
-
-        if (typeof this.state.openingCashUSD !== "number") {
+        if (typeof(this.state.openingCashUSD) !== "number") {
             this.state.openingCashUSD = 0;
         }
-    },
-});
+    }
+}

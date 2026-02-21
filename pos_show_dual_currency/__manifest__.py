@@ -1,38 +1,66 @@
-
+# -*- coding: utf-8 -*-
 {
     "name": """Venezuela: POS show dual currency""",
-    "summary": """Adds price  of other currency at products in POS""",
+    "summary": """Adds price of other currency at products in POS""",
     "category": "Point Of Sale",
-    "version": "17.0.1.2.0",
+    "version": "17.0.1.0.0",
     "application": False,
-    'author': 'José Luis Vizcaya López',
-    'company': 'José Luis Vizcaya López',
-    'maintainer': 'José Luis Vizcaya López',
-    'website': 'https://github.com/birkot',
-    "depends": ["point_of_sale", "stock"],
-    "data": [
-        "views/pos_payment_method.xml",
-        "views/pos_session.xml",
-        "views/pos_payment.xml",
-        "views/pos_config.xml",
-        "views/pos_order.xml",
-        "views/res_config_settings.xml",
+    'author': 'Nayliover espinoza',
+    'license': 'AGPL-3',
+    'depends': [
+        'point_of_sale',
+    ],
+    'data': [
+        'views/data.xml',
+        'views/views.xml',
+        'views/res_config_settings.xml',
+        'views/pos_config.xml',
+        'views/pos_order.xml',
+        'views/pos_payment.xml',
+        'views/pos_payment_method.xml',
+        'views/pos_session.xml',
         'views/report_saledetails.xml',
     ],
-
+    'installable': True,
+    'application': False,
+    'auto_install': False,
     'assets': {
-        'point_of_sale._assets_pos': [
+        'point_of_sale.assets': [
+            # CSS
             'pos_show_dual_currency/static/src/css/pos.css',
-            'pos_show_dual_currency/static/src/js/**/*',
-            'pos_show_dual_currency/static/src/xml/**/*.xml',
+            
+            # JavaScript
+            'pos_show_dual_currency/static/src/js/models.js',
+            'pos_show_dual_currency/static/src/js/ChromeWidgets/TRM.js',
+            'pos_show_dual_currency/static/src/js/ChromeWidgets/CashMoveButton.js',
+            'pos_show_dual_currency/static/src/js/Popups/CashMovePopup.js',
+            'pos_show_dual_currency/static/src/js/Popups/CashOpeningPopup.js',
+            'pos_show_dual_currency/static/src/js/Popups/ClosePosPopup.js',
+            'pos_show_dual_currency/static/src/js/Popups/MoneyDetailsPopup.js',
+            'pos_show_dual_currency/static/src/js/OrderManagementScreen/SaleOrderRow.js',
+            'pos_show_dual_currency/static/src/js/ProductScreen/OrderSummary.js',
+            'pos_show_dual_currency/static/src/js/Screens/PaymentScreen/PaymentScreenPaymentLines.js',
+            'pos_show_dual_currency/static/src/js/Screens/PaymentScreen/PaymentScreenStatus.js',
+            'pos_show_dual_currency/static/src/js/Screens/TicketScreen/TicketScreen.js',
+            'pos_show_dual_currency/static/src/js/Screens/TicketScreen/OrderlineDetails.js',
+            'pos_show_dual_currency/static/src/js/Screens/TicketScreen/OrderDetails.js',
+            
+            # XML Templates (COMPLETO - incluye PaymentScreenStatus.xml)
+            'pos_show_dual_currency/static/src/xml/Chrome.xml',
+            'pos_show_dual_currency/static/src/xml/ChromeWidgets/CashMoveButton.xml',
+            'pos_show_dual_currency/static/src/xml/ChromeWidgets/TRM.xml',
+            'pos_show_dual_currency/static/src/xml/OrderManagementScreen/SaleOrderRow.xml',
+            'pos_show_dual_currency/static/src/xml/Popups/CashMovePopup.xml',
+            'pos_show_dual_currency/static/src/xml/Popups/CashOpeningPopup.xml',
+            'pos_show_dual_currency/static/src/xml/Popups/ClosePosPopup.xml',
+            'pos_show_dual_currency/static/src/xml/Popups/MoneyDetailsPopup.xml',
+            'pos_show_dual_currency/static/src/xml/Popups/ProductConfiguratorPopup.xml',
+            'pos_show_dual_currency/static/src/xml/Screens/PaymentScreen/PaymentScreenPaymentLines.xml',
+            'pos_show_dual_currency/static/src/xml/Screens/PaymentScreen/PaymentScreenStatus.xml',
+            'pos_show_dual_currency/static/src/xml/Screens/TicketScreen/OrderDetails.xml',
+            'pos_show_dual_currency/static/src/xml/Screens/TicketScreen/OrderlineDetails.xml',
+            'pos_show_dual_currency/static/src/xml/Screens/TicketScreen/TicketScreen.xml',
+            'pos_show_dual_currency/static/src/xml/pos.xml',
         ],
     },
-    "license": "OPL-1",
-    'images': [
-        'static/description/thumbnail.png',
-    ],
-    "price": 100,
-    "currency": "USD",
-    "auto_install": False,
-    "installable": True,
 }
