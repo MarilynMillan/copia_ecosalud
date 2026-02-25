@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="OrderlineDetails" t-inherit="point_of_sale.OrderlineDetails" t-inherit-mode="extension">
-        <xpath expr="//t[@t-esc='totalPrice']" position="after">
-            <span style="color: red;">/</span>
+    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('price')]" position="inside">
+            <t t-set="ref_rate" t-value="pos.pos_session.tax_today or 1"/>
+            <span style="color: red;"> / </span>
             <span style="color: red;">
-                <t t-esc="totalPrice_ref"/>
+                <t t-esc="env.pos.format_currency_ref(props.line.price * ref_rate)"/>
             </span>
         </xpath>
-
-    </t>
-
-
-
+    </t> 
 </templates>

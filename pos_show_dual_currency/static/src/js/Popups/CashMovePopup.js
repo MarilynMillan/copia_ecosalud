@@ -1,84 +1,36 @@
 /** @odoo-module */
 
-import { AbstractAwaitablePopup } from "@point_of_sale/app/utils/abstract_awaitable_popup";
-import { useService } from "@web/core/utils/hooks";
-import { _t } from "@web/core/l10n/translation";
-import { useRef, useState } from "@odoo/owl";
-import { parseFloat } from "@web/views/fields/parsers";
+import { patch } from "@web/core/utils/patch";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
+import { floatIsZero } from "@web/core/utils/numbers";
+import { SaleOrderRow } from "@pos_sale/app/screens/order_management_screen/sale_order_row/sale_order_row";
+import { getRefRate } from "../../utils/ref_rate"; // Importamos la utilidad
 
-export class CashMovePopupRefCurrency extends AbstractAwaitablePopup {
-    static template = "CashMovePopupRefCurrency";
-    static defaultProps = {
-        cancelText: _t('Cancel'),
-        title: _t('Cash In/Out'),
-    };
-
+patch(SaleOrderRow.prototype, {
     setup() {
-        super.setup();
-        this.state = useState({
-            inputType: '',
-            inputAmount: '',
-            inputReason: '',
-            inputHasError: false,
-        });
-        this.inputAmountRef = useRef('input-amount-ref');
-    }
+        super.setup(...arguments);
+        this.pos = usePos();
+    },
 
-    confirm() {
-        try {
-            parseFloat(this.state.inputAmount);
-        } catch (_error) {
-            this.state.inputHasError = true;
-            this.errorMessage = this.env._t('Invalid amount');
-            return;
-        }
-        if (this.state.inputType == '') {
-            this.state.inputHasError = true;
-            this.errorMessage = this.env._t('Select either Cash In or Cash Out before confirming.');
-            return;
-        }
-        if (this.state.inputType === 'out' && this.state.inputAmount > 0) {
-            this.state.inputHasError = true;
-            this.errorMessage = this.env._t('Insert a negative amount with the Cash Out option.');
-            return;
-        }
-        if (this.state.inputType === 'in' && this.state.inputAmount < 0) {
-            this.state.inputHasError = true;
-            this.errorMessage = this.env._t('Insert a positive amount with the Cash In option.');
-            return;
-        }
-        if (parseFloat(this.state.inputAmount) < 0) {
-            this.state.inputAmount = this.state.inputAmount.substring(1);
-        }
-        return super.confirm();
-    }
+    get total_ref() {
+        const trm = getRefRate(this.pos);
+        // Usamos this.props.order en lugar de this.order
+        return this.pos.format_currency_ref(this.props.order.amount_total * trm);
+    },
 
-    _onAmountKeypress(event) {
-        if (event.key === '-') {
-            event.preventDefault();
-            this.state.inputAmount = this.state.inputType === 'out' ? this.state.inputAmount.substring(1) : `-${this.state.inputAmount}`;
-            this.state.inputType = this.state.inputType === 'out' ? 'in' : 'out';
-        }
-    }
+    get showAmountUnpaid_ref() {
+        const trm =
+            this.pos.pos_session?.tax_today ||
+            (this.pos.config.show_currency_rate ? 1 / this.pos.config.show_currency_rate : 1);
 
-    onClickButton(type) {
-        let amount = this.state.inputAmount;
-        if (type === 'in') {
-            this.state.inputAmount = amount.charAt(0) === '-' ? amount.substring(1) : amount;
-        } else {
-            this.state.inputAmount = amount.charAt(0) === '-' ? amount : `-${amount}`;
-        }
-        this.state.inputType = type;
-        this.state.inputHasError = false;
-        this.inputAmountRef.el && this.inputAmountRef.el.focus();
-    }
+        const precision = this.pos.res_currency_ref?.decimal_places || 2;
 
-    getPayload() {
-        return {
-            amount: parseFloat(this.state.inputAmount),
-            reason: this.state.inputReason.trim(),
-            type: this.state.inputType,
-            currency_ref: this.env.pos.res_currency_ref,
-        };
-    }
-}
+        const difference = this.order.amount_total - this.order.amount_unpaid;
+        const isFullAmountUnpaidRef = floatIsZero(Math.abs(difference * trm), precision);
+
+        return (
+            !isFullAmountUnpaidRef &&
+            !floatIsZero(this.order.amount_unpaid * trm, precision)
+        );
+    },
+});

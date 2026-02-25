@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
+
     <t t-name="CashMoveButtonRefCurrency" owl="1">
-        <div class="cash-move-button" t-on-click="onClickUSD">
-            <i class="fa fa-money" aria-hidden="true"></i>
-            <span style="padding-left: 10px;">Efectivo $ IN/OUT</span>
-        </div>
+        <li class="menu-item navbar-button" t-on-click="onClickUSD">
+            <a class="dropdown-item py-2">
+                <i class="fa fa-money me-2" aria-hidden="true"></i>
+                <span>Efectivo $ IN/OUT</span>
+            </a>
+        </li>
     </t>
 
-    <t t-name="CashInOutRefCurrencyChrome" t-inherit="point_of_sale.Chrome" t-inherit-mode="extension">
-        <CashMoveButton position="after">
-            <CashMoveButtonRefCurrency t-if="showCashMoveButton()"/>
-        </CashMoveButton>
+    <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
+        
+        <xpath expr="//li[@t-on-click='onCashMoveButtonClick']" position="after">
+            <CashMoveButtonRefCurrency t-if="showCashMoveButton"/>
+        </xpath>
+
     </t>
+
 </templates>

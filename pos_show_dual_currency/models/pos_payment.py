@@ -1,6 +1,7 @@
 from odoo import fields, models, api, _
-from odoo.tools import formatLang, float_is_zero
+from odoo.tools import float_is_zero
 from odoo.exceptions import ValidationError
+from odoo.tools.misc import formatLang
 
 class PosPayment(models.Model):
     _inherit = "pos.payment"

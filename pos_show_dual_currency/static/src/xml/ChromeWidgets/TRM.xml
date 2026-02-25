@@ -7,4 +7,10 @@
         </div>
     </t>
 
+    <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('status-buttons')]" position="inside">
+            <TRM/>
+        </xpath>
+    </t>
+
 </templates>

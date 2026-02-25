@@ -1,29 +1,29 @@
 /** @odoo-module */
 
-import { OrderlineDetails } from "@point_of_sale/app/screens/ticket_screen/orderline_details/orderline_details";
+import { patch } from "@web/core/utils/patch";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
+import { Orderline } from "@point_of_sale/app/generic_components/orderline/orderline";
+import { getRefRate } from "../../utils/ref_rate";
 
-export class OrderlineDetailsUSD extends OrderlineDetails {
-    static template = "OrderlineDetails";
-
+patch(OrderlineDetails.prototype, "pos_show_dual_currency.TicketOrderlineDetails", {
     setup() {
         super.setup();
         this.pos = usePos();
-    }
+    },
 
     get totalPrice_ref() {
-        const trm = this.pos.config.show_currency_rate !== 0 ? 1 / this.pos.config.show_currency_rate : 1;
+        const trm = getRefRate(this.pos);
         return this.pos.format_currency_ref(this.line.totalPrice * trm);
-    }
+    },
 
     get unitPrice_ref() {
-        const trm = this.pos.config.show_currency_rate !== 0 ? 1 / this.pos.config.show_currency_rate : 1;
+        const trm = getRefRate(this.pos);
         return this.pos.format_currency_ref(this.line.unitPrice * trm);
-    }
+    },
 
     get pricePerUnit() {
-        const trm = this.pos.config.show_currency_rate !== 0 ? 1 / this.pos.config.show_currency_rate : 1;
+        const trm = getRefRate(this.pos);
         const unitPriceRef = this.pos.format_currency_ref(this.line.unitPrice * trm);
         return ` ${this.unit} at ${this.unitPrice} - ${unitPriceRef} / ${this.unit}`;
-    }
-}
+    },
+});

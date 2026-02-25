@@ -7,7 +7,7 @@ class PosOrderLine(models.Model):
 
     ref_me_currency_id = fields.Many2one('res.currency', related='order_id.ref_me_currency_id',
                                          string="Reference Currency",
-                                         store=True)
+                                         store=False)
     session_rate = fields.Float(string="Session Rate", store=True,
                                 related='order_id.session_rate',
                                 tracking=True, digits='Dual_Currency_rate')  # ✅ CORREGIDO

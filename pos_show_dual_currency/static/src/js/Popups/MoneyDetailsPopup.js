@@ -1,58 +1,128 @@
 /** @odoo-module */
 
-import { Component } from "@odoo/owl";
-import { usePos } from "@point_of_sale/app/store/pos_hook";
-import { useState } from "@odoo/owl";
+import { ClosePosPopup } from "@point_of_sale/app/utils/close_pos_popup";
+import { patch } from "@web/core/utils/patch";
+import { useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
 
-export class MoneyDetailsPopupUSD extends Component {
-    static template = "MoneyDetailsPopupUSD";
-
+patch(ClosePosPopup.prototype, {
+    
     setup() {
         super.setup();
-        this.pos = usePos();
-        this.currency_ref = this.pos.res_currency_ref;
+        this.notification = useService("notification");
+        this.orm = useService("orm");
+
+        this.manualInputCashCountUSD = false;
+        Object.assign(this, this.props.info);
+
         this.state = useState({
-            moneyDetailsRef: Object.fromEntries(this.pos.bills.map(bill => ([bill.value, 0]))),
-            total_ref: 0,
+            ...this.props.info.state,
+            displayMoneyDetailsPopupUSD: false,
         });
-        if (this.props.manualInputCashCountUSD) {
-            this.reset();
+    }
+
+    async confirm() {
+        if (!this.cashControl || !this.hasDifferenceUSD()) {
+            return super.confirm();
+        } else if (this.hasUserAuthorityUSD()) {
+            const { confirmed } = await this.pos.showPopup("ConfirmPopup", {
+                title: this.env._t("Currency Ref Payments Difference"),
+                body: this.env._t(
+                    "Do you want to accept currency ref payments difference and post a profit/loss journal entry?"
+                ),
+            });
+            if (confirmed) return super.confirm();
+        } else {
+            await this.pos.showPopup("ConfirmPopup", {
+                title: this.env._t("Currency Ref Payments Difference"),
+                body: this.env._t(
+                    "The maximum difference by currency ref allowed is %s.\nPlease contact your manager to accept the closing difference.",
+                    this.pos.format_currency_ref(this.amountAuthorizedDiffUSD)
+                ),
+                confirmText: this.env._t("OK"),
+            });
         }
     }
 
-    get firstHalfMoneyDetailsRef() {
-        const moneyDetailsKeysRef = Object.keys(this.state.moneyDetailsRef).sort((a, b) => a - b);
-        return moneyDetailsKeysRef.slice(0, Math.ceil(moneyDetailsKeysRef.length/2));
+    openDetailsPopupUSD() {
+        const refId = this.defaultCashDetails?.default_cash_details_ref?.id;
+        if (!refId) return;
+
+        this.state.payments_usd[refId].counted = 0;
+        this.state.payments_usd[refId].difference = -this.defaultCashDetails.default_cash_details_ref.amount;
+        this.state.displayMoneyDetailsPopupUSD = true;
     }
 
-    get lastHalfMoneyDetailsRef() {
-        const moneyDetailsKeysRef = Object.keys(this.state.moneyDetailsRef).sort((a, b) => a - b);
-        return moneyDetailsKeysRef.slice(Math.ceil(moneyDetailsKeysRef.length/2), moneyDetailsKeysRef.length);
+    closeDetailsPopupUSD() {
+        this.state.displayMoneyDetailsPopupUSD = false;
     }
 
-    updateMoneyDetailsAmountRef() {
-        let total_ref = Object.entries(this.state.moneyDetailsRef).reduce((total_ref, money_ref) => total_ref + money_ref[0] * money_ref[1], 0);
-        this.state.total_ref = this.pos.round_decimals_currency(total_ref);
+    handleInputChangeUSD(paymentId) {
+        let expectedAmount;
+        if (paymentId === this.defaultCashDetails.default_cash_details_ref.id) {
+            this.manualInputCashCountUSD = true;
+            expectedAmount = this.defaultCashDetails.default_cash_details_ref.amount;
+        } else {
+            expectedAmount = this.otherPaymentMethods.find((pm) => paymentId === pm.id).amount;
+        }
+        this.state.payments_usd[paymentId].difference = this.pos.round_decimals_currency(
+            this.state.payments_usd[paymentId].counted - expectedAmount
+        );
     }
 
-    confirm() {
-        let moneyDetailsNotesRef = this.state.total_ref  ? 'Ref Currency Money details: \n' : null;
-        this.pos.bills.forEach(bill => {
-            if (this.state.moneyDetailsRef[bill.value]) {
-                moneyDetailsNotesRef += `  - ${this.state.moneyDetailsRef[bill.value]} x ${this.pos.format_currency_ref(bill.value)}\n`;
+    updateCountedCashUSD({ total_ref, moneyDetailsNotesRef }) {
+        const refId = this.defaultCashDetails.default_cash_details_ref.id;
+
+        this.state.payments_usd[refId].counted = total_ref;
+        this.state.payments_usd[refId].difference = this.pos.round_decimals_currency(
+            this.state.payments_usd[refId].counted - this.defaultCashDetails.default_cash_details_ref.amount
+        );
+
+        if (moneyDetailsNotesRef) {
+            this.state.notes = (this.state.notes || "") + moneyDetailsNotesRef;
+        }
+        this.manualInputCashCountUSD = false;
+        this.closeDetailsPopupUSD();
+    }
+
+    hasDifferenceUSD() {
+        return Object.values(this.state.payments_usd || {}).some((pm) => pm.difference != 0);
+    }
+
+    hasUserAuthorityUSD() {
+        const diffs = Object.values(this.state.payments_usd || {}).map((pm) => Math.abs(pm.difference || 0));
+        const maxDiff = diffs.length ? Math.max(...diffs) : 0;
+        return this.isManager || this.amountAuthorizedDiffUSD == null || maxDiff <= this.amountAuthorizedDiffUSD;
+    }
+
+    async closeSession() {
+        if (this.closeSessionClicked) return;
+        this.closeSessionClicked = true;
+
+        try {
+            if (this.cashControl) {
+                const refId = this.defaultCashDetails.default_cash_details_ref.id;
+                const counted = this.state.payments_usd[refId].counted;
+
+                const response = await this.orm.call("pos.session", "post_closing_cash_details_ref", [
+                    [this.pos.pos_session.id],
+                    counted,
+                ]);
+
+                if (response && response.successful === false) {
+                    this.closeSessionClicked = false;
+                    return super.handleClosingError(response);
+                }
             }
-        })
-        const payload = { total_ref: this.state.total_ref, moneyDetailsNotesRef, moneyDetailsRef: { ...this.state.moneyDetailsRef } };
-        this.props.onConfirm(payload);
-    }
 
-    reset() {
-        for (let key in this.state.moneyDetailsRef) { this.state.moneyDetailsRef[key] = 0 }
-        this.state.total_ref = 0;
-    }
+            await this.orm.call("pos.session", "update_closing_control_state_session_ref", [
+                [this.pos.pos_session.id],
+                this.state.notes || "",
+            ]);
+        } finally {
+            this.closeSessionClicked = false;
+        }
 
-    discard() {
-        this.reset();
-        this.props.onDiscard();
+        return super.closeSession();
     }
 }

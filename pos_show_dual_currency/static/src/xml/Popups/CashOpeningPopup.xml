@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="CashOpeningPopup" t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
+
+    <t t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension" owl="1">
+
         <xpath expr="//div[hasclass('opening-cash-section')]" position="after">
-            <div class="opening-cash-section">
-                <span class="info-title">USD Opening cash</span>
-                <div class="cash-input-sub-section" t-on-input="handleInputChangeUSD">
-                    <input class="pos-input" type="number" t-model.number="state.openingCashUSD"/>
-                    <div class="button icon" t-on-click="openDetailsPopupUSD">
-                                <i class="fa fa-calculator" role="img" title="Open the money details popup"/>
+            <div class="opening-cash-section mb-3">
+                <span class="info-title d-flex flex-grow-1 align-items-start">USD Opening cash</span>
+                <div class="cash-input-sub-section input-group">
+                    <input class="pos-input form-control" 
+                           type="number" 
+                           t-att-value="state.openingCashUSD" 
+                           t-on-input="handleInputChangeUSD"/>
+                    <div class="button icon btn btn-secondary" t-on-click="openDetailsPopupUSD">
+                        <i class="fa fa-calculator" role="img" title="Open money details USD"/>
                     </div>
                 </div>
             </div>
         </xpath>
-        <xpath expr="//textarea[@class='opening-cash-notes']" position="after">
 
+        <xpath expr="//textarea[hasclass('opening-notes')]" position="after">
             <MoneyDetailsPopupUSD
-                    t-if="state.displayMoneyDetailsPopupUSD"
-                    manualInputCashCountUSD="manualInputCashCountUSD"
-                    onConfirm="(payload) => this.updateCashOpeningUSD(payload)"
-                    onDiscard.bind="closeDetailsPopupUSD"
+                t-if="state.displayMoneyDetailsPopupUSD"
+                manualInputCashCountUSD="manualInputCashCountUSD"
+                onConfirm="(payload) => this.updateCashOpeningUSD(payload)"
+                onDiscard="() => this.closeDetailsPopupUSD()"
             />
         </xpath>
 
     </t>
+
 </templates>
-
-
-

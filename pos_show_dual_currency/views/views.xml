@@ -1,31 +1,45 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_pos_show_dual_currency_config_form" model="ir.ui.view">
-        <field name="name">pos.pin.config.form.show_dual_currency</field>
+        <field name="name">pos.config.form.show_dual_currency</field>
         <field name="model">pos.config</field>
-        <field name="inherit_id" ref="point_of_sale.pos_config_view_form" />
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='iface_big_scrollbars']/../.." position="after">
-                <div class="col-xs-12 col-md-6 o_setting_box" id="show_prod_qtys">
-                    <div class="o_setting_left_pane">
-                        <field name="show_dual_currency" />
-                    </div>
-                    <div class="o_setting_right_pane">
-                        <label for="show_dual_currency" />
-                        <div class="text-muted">
-                            Adds price of other currency at products
+
+            <!-- Insertar justo después del setting "other_devices" del core -->
+            <xpath expr="//setting[@id='other_devices']" position="after">
+                <!-- Odoo 17 usa <setting>, pero dentro podemos meter un layout tipo o_setting_box -->
+                <setting string="Dual Currency" help="Show reference currency amounts in the POS interface.">
+                    <div class="col-12 col-md-6 o_setting_box" id="show_dual_currency_box">
+                        <div class="o_setting_left_pane">
+                            <field name="show_dual_currency"/>
                         </div>
-                        <div class="content-group mt16 row"  attrs="{'invisible':[('show_dual_currency','=',False)]}">
-                            <label for="show_currency" string="Currency"  class="col-lg-3 o_light_label"/>
-                            <field name="show_currency"   />
+                        <div class="o_setting_right_pane">
+                            <label for="show_dual_currency"/>
+                            <div class="text-muted">
+                                Adds price of other currency at products
+                            </div>
+
+                            <div class="content-group mt16" invisible="not show_dual_currency">
+                                <div class="row">
+                                    <label for="show_currency" string="Currency" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-9">
+                                        <field name="show_currency"/>
+                                    </div>
+                                </div>
+
+                                <div class="row mt16">
+                                    <label for="show_currency_rate" string="Rate" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-9">
+                                        <field name="show_currency_rate" digits="[12,21]"/>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="content-group mt16 row"  attrs="{'invisible':[('show_dual_currency','=',False)]}">
-                             <label for="show_currency_rate" string="Rate"  class="col-lg-3 o_light_label"/>
-                             <field name="show_currency_rate" digits="[12,21]"/>
-                         </div>
                     </div>
-                </div>
+                </setting>
             </xpath>
+
         </field>
     </record>
 </odoo>

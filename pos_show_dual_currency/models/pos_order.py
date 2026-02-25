@@ -22,10 +22,10 @@ class PosOrder(models.Model):
     @api.depends('session_rate', 'margin')
     def _compute_margin_ref(self):
         for order in self:
-            if order.session_rate != 0:
+            if order.session_rate:
                 order.margin_ref = order.margin / order.session_rate
             else:
-                order.margin = 0
+                order.margin_ref = 0
 
     @api.depends('amount_tax', 'amount_total', 'session_rate', 'amount_paid')
     def _compute_amount_all_ref(self):

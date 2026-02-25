@@ -3,15 +3,13 @@
     "name": """Venezuela: POS show dual currency""",
     "summary": """Adds price of other currency at products in POS""",
     "category": "Point Of Sale",
-    "version": "17.0.1.0.0",
-    "application": False,
+    "version": "17.0.1.0.2",
     'author': 'Nayliover espinoza',
     'license': 'AGPL-3',
     'depends': [
         'point_of_sale',
     ],
     'data': [
-        'views/data.xml',
         'views/views.xml',
         'views/res_config_settings.xml',
         'views/pos_config.xml',
@@ -25,18 +23,16 @@
     'application': False,
     'auto_install': False,
     'assets': {
-        'point_of_sale.assets': [
-            # CSS
+        'point_of_sale._assets_pos': [
+            # 1. ESTILOS (CSS)
             'pos_show_dual_currency/static/src/css/pos.css',
-            
-            # JavaScript
+
+            # 2. LÓGICA JAVASCRIPT (Ordenada por importancia)
+            'pos_show_dual_currency/static/src/js/utils/ref_rate.js',
             'pos_show_dual_currency/static/src/js/models.js',
+            'pos_show_dual_currency/static/src/js/ChromePatch.js',
             'pos_show_dual_currency/static/src/js/ChromeWidgets/TRM.js',
             'pos_show_dual_currency/static/src/js/ChromeWidgets/CashMoveButton.js',
-            'pos_show_dual_currency/static/src/js/Popups/CashMovePopup.js',
-            'pos_show_dual_currency/static/src/js/Popups/CashOpeningPopup.js',
-            'pos_show_dual_currency/static/src/js/Popups/ClosePosPopup.js',
-            'pos_show_dual_currency/static/src/js/Popups/MoneyDetailsPopup.js',
             'pos_show_dual_currency/static/src/js/OrderManagementScreen/SaleOrderRow.js',
             'pos_show_dual_currency/static/src/js/ProductScreen/OrderSummary.js',
             'pos_show_dual_currency/static/src/js/Screens/PaymentScreen/PaymentScreenPaymentLines.js',
@@ -44,11 +40,17 @@
             'pos_show_dual_currency/static/src/js/Screens/TicketScreen/TicketScreen.js',
             'pos_show_dual_currency/static/src/js/Screens/TicketScreen/OrderlineDetails.js',
             'pos_show_dual_currency/static/src/js/Screens/TicketScreen/OrderDetails.js',
-            
-            # XML Templates (COMPLETO - incluye PaymentScreenStatus.xml)
-            'pos_show_dual_currency/static/src/xml/Chrome.xml',
-            'pos_show_dual_currency/static/src/xml/ChromeWidgets/CashMoveButton.xml',
+            'pos_show_dual_currency/static/src/js/Popups/CashMovePopup.js',
+            'pos_show_dual_currency/static/src/js/Popups/CashOpeningPopup.js',
+            'pos_show_dual_currency/static/src/js/Popups/ClosePosPopup.js',
+            'pos_show_dual_currency/static/src/js/Popups/MoneyDetailsPopup.js',
+            'pos_show_dual_currency/static/src/js/Receipt/OrderlineReceipt.js',
+            'pos_show_dual_currency/static/src/js/Receipt/OrderReceipt.js',
+
+            # 3. VISTAS XML (Organizadas por carpeta)
+            'pos_show_dual_currency/static/src/xml/Navbar.xml',
             'pos_show_dual_currency/static/src/xml/ChromeWidgets/TRM.xml',
+            'pos_show_dual_currency/static/src/xml/ChromeWidgets/CashMoveButton.xml',
             'pos_show_dual_currency/static/src/xml/OrderManagementScreen/SaleOrderRow.xml',
             'pos_show_dual_currency/static/src/xml/Popups/CashMovePopup.xml',
             'pos_show_dual_currency/static/src/xml/Popups/CashOpeningPopup.xml',

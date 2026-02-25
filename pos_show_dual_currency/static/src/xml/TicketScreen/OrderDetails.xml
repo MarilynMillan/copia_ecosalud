@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="OrderDetails" t-inherit="point_of_sale.OrderDetails" t-inherit-mode="extension">
-        <xpath expr="//t[@t-esc='total']" position="after">
-            <span style="color: red;">/</span>
-            <span style="color: red;">
-                <t t-esc="total_ref"/>
-            </span>
-        </xpath>
-        <xpath expr="//t[@t-esc='tax']" position="after">
-            <span style="color: red;">/</span>
-            <span style="color: red;">
-                <t t-esc="tax_ref"/>
-            </span>
+
+    <t t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//OrderWidget" position="inside">
+            <t t-set-slot="total-after">
+                <div t-if="env.pos.config.show_dual_currency" class="total-ref" style="color: red; text-align: right; font-weight: bold;">
+                    Total Ref: <t t-esc="total_ref"/>
+                </div>
+            </t>
         </xpath>
     </t>
 

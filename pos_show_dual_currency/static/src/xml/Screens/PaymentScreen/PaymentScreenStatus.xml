@@ -1,23 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="PaymentScreenStatus" t-inherit="point_of_sale.PaymentScreenStatus" t-inherit-mode="extension">
+
+    <t t-inherit="point_of_sale.PaymentScreenStatus" t-inherit-mode="extension" owl="1">
+
+        <xpath expr="//section[hasclass('paymentlines-container')]" position="inside">
+            <t t-set="ref_rate"
+               t-value="pos.pos_session.tax_today or (pos.config.show_currency_rate != 0 ? (1/pos.config.show_currency_rate) : 1)"/>
+        </xpath>
+
         <xpath expr="//div[hasclass('total')]/t[@t-esc='totalDueText']" position="after">
-                / <span style="color: red;font-size: 35px;">$ </span> 
-                <span style="color: red; font-size: 35px;" 
-                      t-esc="env.pos.format_currency_no_symbol(props.order.get_total_with_tax() * env.pos.config.show_currency_rate)" />
+            <span style="color:red;font-size:35px;"> / </span>
+            <span style="color:red;font-size:35px;"
+                  t-esc="env.pos.format_currency_ref(props.order.get_due() * ref_rate)"/>
         </xpath>
+
+        <xpath expr="//div[hasclass('payment-status-remaining')]/span[hasclass('amount')]/t[@t-esc='remainingText']" position="after">
+            <span style="color:red;"> / </span>
+            <span style="color:red;" t-esc="remainingTextUSD"/>
+        </xpath>
+
         <xpath expr="//div[hasclass('payment-status-total-due')]/span[2]/t[@t-esc='totalDueText']" position="after">
-                / <span style="color: red;">$ </span> 
-                <span style="color: red;" 
-                      t-esc="env.pos.format_currency_no_symbol(props.order.get_total_with_tax() * env.pos.config.show_currency_rate)" />
+            <span style="color:red;"> / </span>
+            <span style="color:red;"
+                  t-esc="env.pos.format_currency_ref(props.order.get_due() * ref_rate)"/>
         </xpath>
-        <xpath expr="//div[hasclass('payment-status-remaining')]/span[2]/t[@t-esc='remainingText']" position="after">
-                / <span style="color: red;">$ </span>
-                <span style="color: red;" t-esc="remainingTextUSD" />
+
+        <xpath expr="//div[hasclass('payment-status-change')]/span[hasclass('amount')]/t[@t-esc='changeText']" position="after">
+            <span style="color:red;"> / </span>
+            <span style="color:red;" t-esc="changeTextUSD"/>
         </xpath>
-        <xpath expr="//div[hasclass('payment-status-change')]/span[2]/t[@t-esc='changeText']" position="after">
-                / <span style="color: red;">$ </span>
-                <span style="color: red;" t-esc="changeTextUSD" />
-        </xpath>
+
     </t>
 </templates>

@@ -1,65 +1,149 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <template id="pos_daily_report" inherit_id="point_of_sale.report_saledetails">
-        <xpath expr="//tr[@t-foreach='products']//td[3]" position="replace">
-            <td>
-                <t t-esc='line["price_unit"]'/>
-                <t t-esc='symbol'/>
-                /
-                <span style="color: red">
-                    <t t-esc='symbol_ref'/>
-                    <t t-esc='format_currency(line["price_unit_ref"], symbol_ref, currency_precision_ref)'/>
+
+        <!-- =========================================================
+             1) PRODUCT LINES: mostrar / Ref antes del "Disc: ..."
+             Base Odoo 17 usa line["base_amount"] (total tax excl por producto)
+           ========================================================= -->
+        <xpath expr="//t[@t-if='line[&quot;discount&quot;] != 0']" position="before">
+            <span style="color: red;"> / </span>
+            <t t-if="currency_ref['position']">
+                <span style="color: red;"
+                      t-out='line["base_amount"] / (rate_today or 1)'
+                      t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                <span style="color: red;" t-out='currency_ref["symbol"]'/>
+            </t>
+            <t t-else="">
+                <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                <span style="color: red;"
+                      t-out='line["base_amount"] / (rate_today or 1)'
+                      t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+            </t>
+        </xpath>
+
+        <!-- =========================================================
+             2) PAYMENTS: agregar / Ref en la columna Total
+           ========================================================= -->
+        <xpath expr="//tr[@t-foreach='payments' and @t-as='payment']/td[@class='text-end']" position="replace">
+            <td class="text-end">
+                <!-- moneda company (core) -->
+                <span t-if="currency['position']">
+                    <span t-out="payment['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                    <span t-out='currency["symbol"]'/>
+                </span>
+                <span t-else="">
+                    <span t-out='currency["symbol"]'/>
+                    <span t-out="payment['total']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
                 </span>
 
-                <t t-if='line["discount"] != 0'>
-                    Disc:<t t-esc='line["discount"]'/>%
-                </t>
+                <span style="color: red;"> / </span>
+
+                <!-- moneda ref -->
+                <span t-if="currency_ref['position']">
+                    <span style="color: red;"
+                          t-out="payment['total'] / (rate_today or 1)"
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                    <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                </span>
+                <span t-else="">
+                    <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                    <span style="color: red;"
+                          t-out="payment['total'] / (rate_today or 1)"
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                </span>
             </td>
         </xpath>
 
-        <xpath expr="//tr[@t-foreach='payments']" position="replace">
-            <tr t-foreach='payments' t-as='payment'>
-                <td>
-                    <t t-esc="payment['name']"/>
-                </td>
-                <td>
-                    <t t-esc="format_currency(payment['total'], symbol, currency_precision)"/>
-                    /
-                    <span style="color: red">
-                        <t t-esc="format_currency(payment['total_ref'], symbol_ref, currency_precision_ref)"/>
-                    </span>
-                </td>
-            </tr>
+        <!-- =========================================================
+             3) TAXES: agregar / Ref en Tax Amount y Base Amount
+           ========================================================= -->
+        <xpath expr="//td[.//span[@t-out=&quot;tax['tax_amount']&quot;]]" position="replace">
+            <td class="text-end">
+                <span t-if="currency['position']">
+                    <span t-out="tax['tax_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                    <span t-out='currency["symbol"]'/>
+                </span>
+                <span t-else="">
+                    <span t-out='currency["symbol"]'/>
+                    <span t-out="tax['tax_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                </span>
+
+                <span style="color: red;"> / </span>
+
+                <span t-if="currency_ref['position']">
+                    <span style="color: red;"
+                          t-out="tax['tax_amount'] / (rate_today or 1)"
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                    <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                </span>
+                <span t-else="">
+                    <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                    <span style="color: red;"
+                          t-out="tax['tax_amount'] / (rate_today or 1)"
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                </span>
+            </td>
         </xpath>
 
-        <xpath expr="//tr[@t-foreach='taxes']" position="replace">
-            <tr t-foreach='taxes' t-as='tax'>
-                <td>
-                    <t t-esc="tax['name']"/>
-                </td>
-                <td>
-                    <t t-esc="format_currency(tax['tax_amount'], symbol, currency_precision)"/>
-                    /
-                    <span style="color: red">
-                        <t t-esc="format_currency(tax['tax_amount_ref']/rate_today, symbol_ref, currency_precision_ref)"/>
-                    </span>
-                </td>
-                <td>
-                    <t t-esc="format_currency(tax['base_amount'], symbol, currency_precision)"/>
-                    /
-                    <span style="color: red">
-                        <t t-esc="format_currency(tax['base_amount_ref'], symbol_ref, currency_precision_ref)"/>
-                    </span>
-                </td>
-            </tr>
+        <xpath expr="//td[.//span[@t-out=&quot;tax['base_amount']&quot;]]" position="replace">
+            <td class="text-end">
+                <span t-if="currency['position']">
+                    <span t-out="tax['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                    <span t-out='currency["symbol"]'/>
+                </span>
+                <span t-else="">
+                    <span t-out='currency["symbol"]'/>
+                    <span t-out="tax['base_amount']" t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                </span>
+
+                <span style="color: red;"> / </span>
+
+                <span t-if="currency_ref['position']">
+                    <span style="color: red;"
+                          t-out="tax['base_amount'] / (rate_today or 1)"
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                    <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                </span>
+                <span t-else="">
+                    <span style="color: red;" t-out='currency_ref["symbol"]'/>
+                    <span style="color: red;"
+                          t-out="tax['base_amount'] / (rate_today or 1)"
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                </span>
+            </td>
         </xpath>
-        
-        <xpath expr="//t[@t-esc='total_paid']" position="after">
-            <t t-esc='symbol'/>
-            /
-            <span style="color: red">
-                <t t-esc="format_currency(total_paid_ref, symbol_ref, currency_precision_ref)"/>
-            </span>
+
+        <!-- =========================================================
+             4) TOTAL del reporte (Session Control): antes era total_paid, ahora currency["total_paid"]
+           ========================================================= -->
+        <xpath expr="//t[@id='closing_session']//div[@style='break-inside: avoid;']/strong[1]" position="replace">
+            <strong>Total:
+                <span t-if="currency['position']">
+                    <span t-out='currency[&quot;total_paid&quot;]' t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                    <span t-out='currency[&quot;symbol&quot;]'/>
+                </span>
+                <span t-else="">
+                    <span t-out='currency[&quot;symbol&quot;]'/>
+                    <span t-out='currency[&quot;total_paid&quot;]' t-options="{'widget': 'float', 'precision': currency['precision']}"/>
+                </span>
+
+                <span style="color: red;"> / </span>
+
+                <span t-if="currency_ref['position']">
+                    <span style="color: red;"
+                          t-out='currency[&quot;total_paid&quot;] / (rate_today or 1)'
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                    <span style="color: red;" t-out='currency_ref[&quot;symbol&quot;]'/>
+                </span>
+                <span t-else="">
+                    <span style="color: red;" t-out='currency_ref[&quot;symbol&quot;]'/>
+                    <span style="color: red;"
+                          t-out='currency[&quot;total_paid&quot;] / (rate_today or 1)'
+                          t-options="{'widget': 'float', 'precision': currency_ref['precision']}"/>
+                </span>
+            </strong>
         </xpath>
+
     </template>
 </odoo>
