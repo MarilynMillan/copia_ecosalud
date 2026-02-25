@@ -6,8 +6,8 @@ import { formatFloat } from "@web/core/utils/numbers";
 import { renderToString } from "@web/core/utils/render";
 
 patch(PosStore.prototype, {
-    async setup() {
-        await super.setup(...arguments);
+    setup() {
+        super.setup(...arguments);
         this.res_currency_ref = null;
     },
 
