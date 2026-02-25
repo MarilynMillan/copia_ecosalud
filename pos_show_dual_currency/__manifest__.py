@@ -23,32 +23,28 @@
     'application': False,
     'auto_install': False,
     'assets': {
-        'point_of_sale._assets_pos': [
+        'point_of_sale.assets': [
             # 1. ESTILOS (CSS)
             'pos_show_dual_currency/static/src/css/pos.css',
 
-            # 2. LÓGICA JAVASCRIPT (Ordenada por importancia)
+            # 2. LÓGICA JAVASCRIPT
             'pos_show_dual_currency/static/src/js/utils/ref_rate.js',
             'pos_show_dual_currency/static/src/js/models.js',
             'pos_show_dual_currency/static/src/js/ChromePatch.js',
             'pos_show_dual_currency/static/src/js/ChromeWidgets/TRM.js',
             'pos_show_dual_currency/static/src/js/ChromeWidgets/CashMoveButton.js',
             'pos_show_dual_currency/static/src/js/OrderManagementScreen/SaleOrderRow.js',
-            'pos_show_dual_currency/static/src/js/ProductScreen/OrderSummary.js',
+            'pos_show_dual_currency/static/src/js/OrderWidget.js',
             'pos_show_dual_currency/static/src/js/Screens/PaymentScreen/PaymentScreenPaymentLines.js',
             'pos_show_dual_currency/static/src/js/Screens/PaymentScreen/PaymentScreenStatus.js',
-            'pos_show_dual_currency/static/src/js/Screens/TicketScreen/TicketScreen.js',
-            'pos_show_dual_currency/static/src/js/Screens/TicketScreen/OrderlineDetails.js',
-            'pos_show_dual_currency/static/src/js/Screens/TicketScreen/OrderDetails.js',
+            'pos_show_dual_currency/static/src/js/TicketScreen/TicketScreen.js',
             'pos_show_dual_currency/static/src/js/Popups/CashMovePopup.js',
             'pos_show_dual_currency/static/src/js/Popups/CashOpeningPopup.js',
             'pos_show_dual_currency/static/src/js/Popups/ClosePosPopup.js',
-            'pos_show_dual_currency/static/src/js/Popups/MoneyDetailsPopup.js',
             'pos_show_dual_currency/static/src/js/Receipt/OrderlineReceipt.js',
             'pos_show_dual_currency/static/src/js/Receipt/OrderReceipt.js',
 
-            # 3. VISTAS XML (Organizadas por carpeta)
-            'pos_show_dual_currency/static/src/xml/Navbar.xml',
+            # 3. VISTAS XML
             'pos_show_dual_currency/static/src/xml/ChromeWidgets/TRM.xml',
             'pos_show_dual_currency/static/src/xml/ChromeWidgets/CashMoveButton.xml',
             'pos_show_dual_currency/static/src/xml/OrderManagementScreen/SaleOrderRow.xml',
@@ -59,9 +55,7 @@
             'pos_show_dual_currency/static/src/xml/Popups/ProductConfiguratorPopup.xml',
             'pos_show_dual_currency/static/src/xml/Screens/PaymentScreen/PaymentScreenPaymentLines.xml',
             'pos_show_dual_currency/static/src/xml/Screens/PaymentScreen/PaymentScreenStatus.xml',
-            'pos_show_dual_currency/static/src/xml/Screens/TicketScreen/OrderDetails.xml',
-            'pos_show_dual_currency/static/src/xml/Screens/TicketScreen/OrderlineDetails.xml',
-            'pos_show_dual_currency/static/src/xml/Screens/TicketScreen/TicketScreen.xml',
+            'pos_show_dual_currency/static/src/xml/TicketScreen/TicketScreen.xml',
             'pos_show_dual_currency/static/src/xml/pos.xml',
         ],
     },

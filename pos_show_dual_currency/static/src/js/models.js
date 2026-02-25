@@ -2,11 +2,11 @@
 
 import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { patch } from "@web/core/utils/patch";
-
+import { formatFloat } from "@web/core/utils/numbers";
+import { renderToString } from "@web/core/utils/render";
 
 patch(PosStore.prototype, {
     async setup() {
-        // En Odoo 17, super.setup() no suele ser async, pero se recomienda usar super.setup(...arguments)
         await super.setup(...arguments);
         this.res_currency_ref = null;
     },
@@ -16,6 +16,10 @@ patch(PosStore.prototype, {
         this.res_currency_ref = loadedData.res_currency_ref;
     },
 
+    format_currency_no_symbol(amount, precision, currency) {
+        // Simple formatter without symbol
+        return formatFloat(amount, { digits: [precision, precision] });
+    },
 
     format_currency_ref(amount) {
         const cur = this.res_currency_ref;
@@ -28,6 +32,8 @@ patch(PosStore.prototype, {
     },
 
     async getClosePosInfo() {
+        // Calls orm which is this.orm (from service)
+        // PosStore in 17 has this.orm? Usually yes.
         const closingData = await this.orm.call("pos.session", "get_closing_control_data", [[this.pos_session.id]]);
         const amountAuthorizedDiffUSD = closingData.amount_authorized_diff_ref;
 

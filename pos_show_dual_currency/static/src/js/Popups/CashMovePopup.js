@@ -1,36 +1,40 @@
 /** @odoo-module */
 
-import { patch } from "@web/core/utils/patch";
+import { AbstractAwaitablePopup } from "@point_of_sale/app/popup/abstract_awaitable_popup";
+import { useState } from "@odoo/owl";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
-import { floatIsZero } from "@web/core/utils/numbers";
-import { SaleOrderRow } from "@pos_sale/app/screens/order_management_screen/sale_order_row/sale_order_row";
-import { getRefRate } from "../../utils/ref_rate"; // Importamos la utilidad
+import { _t } from "@web/core/l10n/translation";
 
-patch(SaleOrderRow.prototype, {
+export class CashMovePopupRefCurrency extends AbstractAwaitablePopup {
+    static template = "CashMovePopupRefCurrency";
+
     setup() {
-        super.setup(...arguments);
+        super.setup();
         this.pos = usePos();
-    },
+        this.state = useState({
+            inputType: 'in', // 'in' or 'out'
+            inputAmount: '',
+            inputReason: '',
+            inputHasError: false,
+        });
+    }
 
-    get total_ref() {
-        const trm = getRefRate(this.pos);
-        // Usamos this.props.order en lugar de this.order
-        return this.pos.format_currency_ref(this.props.order.amount_total * trm);
-    },
+    onClickButton(type) {
+        this.state.inputType = type;
+    }
 
-    get showAmountUnpaid_ref() {
-        const trm =
-            this.pos.pos_session?.tax_today ||
-            (this.pos.config.show_currency_rate ? 1 / this.pos.config.show_currency_rate : 1);
+    _onAmountKeypress(ev) {
+        if (ev.key === "Enter") {
+            this.confirm();
+        }
+    }
 
-        const precision = this.pos.res_currency_ref?.decimal_places || 2;
-
-        const difference = this.order.amount_total - this.order.amount_unpaid;
-        const isFullAmountUnpaidRef = floatIsZero(Math.abs(difference * trm), precision);
-
-        return (
-            !isFullAmountUnpaidRef &&
-            !floatIsZero(this.order.amount_unpaid * trm, precision)
-        );
-    },
-});
+    getPayload() {
+        return {
+            type: this.state.inputType,
+            amount: parseFloat(this.state.inputAmount) || 0,
+            reason: this.state.inputReason,
+            currency_ref: this.pos.res_currency_ref,
+        };
+    }
+}

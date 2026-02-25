@@ -4,32 +4,29 @@ import { Component } from "@odoo/owl";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
-
-const TRANSLATED_CASH_MOVE_TYPE = {
-    in: _t("in"),
-    out: _t("out"),
-};
+import { CashMovePopupRefCurrency } from "../Popups/CashMovePopup";
 
 export class CashMoveButtonRefCurrency extends Component {
     static template = "CashMoveButtonRefCurrency";
 
     setup() {
         this.pos = usePos();
-        this.notification = useService("notification");
+        this.popup = useService("popup");
         this.orm = useService("orm");
+        this.notification = useService("notification");
     }
 
     async onClickUSD() {
-        const { confirmed, payload } = await this.pos.showPopup("CashMovePopupRefCurrency");
+        const { confirmed, payload } = await this.popup.add(CashMovePopupRefCurrency);
         if (!confirmed) return;
 
         const { type, amount, reason, currency_ref } = payload;
-        const translatedType = TRANSLATED_CASH_MOVE_TYPE[type];
+        const translatedType = type === 'in' ? _t("in") : _t("out");
         const formattedAmount = this.pos.format_currency_ref(amount);
 
         if (!amount) {
             return this.notification.add(
-                this.env._t("Cash in/out of %s is ignored.", formattedAmount),
+                _t("Cash in/out of %s is ignored.", formattedAmount),
                 { type: "warning" }
             );
         }
@@ -46,7 +43,7 @@ export class CashMoveButtonRefCurrency extends Component {
         ]);
 
         this.notification.add(
-            this.env._t("Successfully made a cash %s of %s.", type, formattedAmount),
+            _t("Successfully made a cash %s of %s.", type, formattedAmount),
             { type: "success" }
         );
     }

@@ -16,11 +16,11 @@
                                 <div class="input-field">
                                     <input type="text" name="amount" t-model="state.inputAmount"
                                            t-ref="input-amount-ref" t-on-keypress="_onAmountKeypress"/>
-                                    <t t-if="env.pos.res_currency_ref.symbol.length > 1">
-                                        <span class="left-currency" t-esc="env.pos.res_currency_ref.symbol"/>
+                                    <t t-if="env.services.pos.res_currency_ref.symbol.length > 1">
+                                        <span class="left-currency" t-esc="env.services.pos.res_currency_ref.symbol"/>
                                     </t>
                                     <t t-else="">
-                                        <span class="left-currency" t-esc="env.pos.res_currency_ref.symbol"/>
+                                        <span class="left-currency" t-esc="env.services.pos.res_currency_ref.symbol"/>
                                     </t>
                                 </div>
                             </div>
@@ -41,4 +41,3 @@
                 </div>
     </t>
 </templates>
-
