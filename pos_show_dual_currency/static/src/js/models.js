@@ -1,9 +1,10 @@
 /** @odoo-module */
 
 import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { Order, Orderline } from "@point_of_sale/app/store/models";
 import { patch } from "@web/core/utils/patch";
 import { formatFloat } from "@web/core/utils/numbers";
-import { renderToString } from "@web/core/utils/render";
+import { getRefRate } from "./utils/ref_rate";
 
 patch(PosStore.prototype, {
     setup() {
@@ -17,7 +18,6 @@ patch(PosStore.prototype, {
     },
 
     format_currency_no_symbol(amount, precision, currency) {
-        // Simple formatter without symbol
         return formatFloat(amount, { digits: [precision, precision] });
     },
 
@@ -32,8 +32,6 @@ patch(PosStore.prototype, {
     },
 
     async getClosePosInfo() {
-        // Calls orm which is this.orm (from service)
-        // PosStore in 17 has this.orm? Usually yes.
         const closingData = await this.orm.call("pos.session", "get_closing_control_data", [[this.pos_session.id]]);
         const amountAuthorizedDiffUSD = closingData.amount_authorized_diff_ref;
 
@@ -75,5 +73,28 @@ patch(PosStore.prototype, {
         }
 
         return { ...info, state: state_new, amountAuthorizedDiffUSD };
+    },
+});
+
+patch(Order.prototype, {
+    export_for_printing() {
+        const result = super.export_for_printing(...arguments);
+        const trm = getRefRate(this.pos);
+        result.total_with_tax_ref = this.pos.format_currency_ref(this.get_total_with_tax() * trm);
+        result.total_tax_ref = this.pos.format_currency_ref(this.get_total_tax() * trm);
+        result.amount_total_ref = this.get_total_with_tax() * trm; // raw float for calculations if needed
+        return result;
+    },
+});
+
+patch(Orderline.prototype, {
+    export_for_printing() {
+        const result = super.export_for_printing(...arguments);
+        const trm = getRefRate(this.pos);
+        result.price_display_ref = this.pos.format_currency_ref(this.get_display_price() * trm);
+        result.price_with_tax_ref = this.pos.format_currency_ref(this.get_price_with_tax() * trm);
+        result.price_without_tax_ref = this.pos.format_currency_ref(this.get_price_without_tax() * trm);
+        result.price_ref = this.pos.format_currency_ref(this.get_unit_display_price() * trm);
+        return result;
     },
 });
