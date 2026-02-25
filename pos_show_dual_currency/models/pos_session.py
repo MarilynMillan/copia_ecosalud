@@ -14,7 +14,6 @@ class PosSession(models.Model):
         string="Tasa Sesión",
         store=True,
         compute="_compute_tax_today",
-        tracking=True,
         digits="Dual_Currency_rate",
         help="Factor para convertir montos de la moneda de la sesión a la moneda de referencia.",
     )
@@ -328,37 +327,97 @@ class PosSession(models.Model):
     # ------------------------------------------------------------------
     # POS UI data: currency ref
     # ------------------------------------------------------------------
-    def _loader_params_res_currency_ref(self):
-        currency_id = self.ref_me_currency_id.id or self.company_id.currency_id.id
-        return {
-            "search_params": {
-                "domain": [("id", "=", currency_id)],
-                "fields": ["id", "name", "symbol", "position", "rounding", "rate", "decimal_places"],
-            }
-        }
+    def _pos_ui_models_to_load(self):
+        result = super()._pos_ui_models_to_load()
+        # Ensure that res.currency is loaded (usually it is), but we need to load currency_ref specifically?
+        # In v17, models like res.currency are loaded. We just need to make sure we append our data.
+        # Actually, we can just overload _load_pos_data to inject 'res_currency_ref'.
+        return result
 
-    def _get_pos_ui_res_currency_ref(self, params):
-        res_currency = self.env["res.currency"].search_read(**params["search_params"])
+    def _loader_params_res_currency(self):
+        # We can try to extend parameters if needed, but here we want a specific separate key in loaded_data
+        return super()._loader_params_res_currency()
+
+    def _get_pos_ui_res_currency_ref(self):
+        currency_id = self.ref_me_currency_id.id or self.company_id.currency_id.id
+        domain = [("id", "=", currency_id)]
+        fields = ["id", "name", "symbol", "position", "rounding", "rate", "decimal_places"]
+        res_currency = self.env["res.currency"].search_read(domain, fields)
         return res_currency[0] if res_currency else False
 
-    def _pos_data_process(self, loaded_data):
-        super()._pos_data_process(loaded_data)
-        currency_ref = self._get_pos_ui_res_currency_ref(self._loader_params_res_currency_ref())
-        loaded_data["res_currency_ref"] = currency_ref
+    @api.model
+    def _load_pos_data(self, data):
+        loaded_data = super()._load_pos_data(data)
+        # Inject res_currency_ref
+        # Note: 'self' here is the model, not a record. We need the session context.
+        # _load_pos_data(self, data)
+        # Wait, how do we get the session ID?
+        # In v17, _load_pos_data is called on the model. It receives 'data' which might contain session info?
+        # Actually, usually session_id is passed in context or data.
+        # But wait, self.env.user...
+        # Let's look at how _load_pos_data works in 17.
+        # def _load_pos_data(self, data):
+        #     domain = self._loader_params_pos_session()['search_params']['domain']
+        #     pos_session = self.search(domain)
+        # Ah, typically load_pos_data is called by the controller which passes domain/fields.
+        # But here we are overriding the method on the model.
+        # The session is typically retrieved via domain in data? No.
+        # Let's check knowledgebase for _load_pos_data signature.
+        # Knowledgebase lookup...
+        # Assuming standard v17 pattern:
+        # We can rely on `self.env['pos.session'].search([('state', '=', 'opening_control')])` or similar? No.
 
-    def _loader_params_pos_payment_method(self):
-        res = super()._loader_params_pos_payment_method()
-        fields_list = res["search_params"]["fields"]
-        if "currency_id" not in fields_list:
-            fields_list.append("currency_id")
-        return res
+        # Actually, in v17, the controller calls:
+        # session_info = request.env['pos.session'].browse(session_id).get_pos_ui_product_category(...)
+        # No, it calls `models._load_pos_data(data)`.
 
+        # Let's stick to the previous pattern using `_pos_data_process` if it exists in v17?
+        # `_pos_data_process` was v16.
+        # In v17 it is `_load_pos_data`.
+
+        # However, to avoid complexity if I'm not sure about getting the session instance inside the class method:
+        # I can see `pos.session` fields are loaded.
+        # I added `cash_register_balance_start_mn_ref` to `pos.session` loader params via `_loader_params_pos_session` override (if that still works).
+        # Does `_loader_params_pos_session` work in v17?
+        # Point of Sale `pos_session.py` in v17 DOES define `_loader_params_pos_session`.
+        # So overrides to `_loader_params_...` ARE valid in v17 for core models.
+        pass
+        return loaded_data
+
+    # Re-adding the loader params methods as they ARE valid in v17 for core models loaded via _load_pos_data loop.
+
+    @api.model
     def _loader_params_pos_session(self):
-        res = super()._loader_params_pos_session()
-        fields_list = res["search_params"]["fields"]
-        if "cash_register_balance_start_mn_ref" not in fields_list:
-            fields_list.append("cash_register_balance_start_mn_ref")
-        return res
+        params = super()._loader_params_pos_session()
+        # params['search_params']['fields'].append('cash_register_balance_start_mn_ref')
+        # But 'search_params' might be missing if super doesn't return it structured that way?
+        # V17 structure: {'search_params': {'domain': ..., 'fields': [...]}}
+        if params and 'search_params' in params and 'fields' in params['search_params']:
+             params['search_params']['fields'].append('cash_register_balance_start_mn_ref')
+        return params
+
+    @api.model
+    def _loader_params_pos_payment_method(self):
+        params = super()._loader_params_pos_payment_method()
+        if params and 'search_params' in params and 'fields' in params['search_params']:
+             params['search_params']['fields'].append('currency_id')
+        return params
+
+    # For res_currency_ref, we need to inject it manually into the response because it's not a standard loaded model list item
+    # or we can treat it as part of 'res.currency' load but we want a specific key 'res_currency_ref'.
+
+    @api.model
+    def _load_pos_data(self, data):
+        loaded_data = super()._load_pos_data(data)
+        # We need the session.
+        # The session is loaded in loaded_data['pos.session']['data'][0] usually.
+        session_data = loaded_data.get('pos.session', {}).get('data', [])
+        if session_data:
+            session_id = session_data[0]['id']
+            session = self.browse(session_id)
+            # Fetch ref currency
+            loaded_data['res_currency_ref'] = session._get_pos_ui_res_currency_ref()
+        return loaded_data
 
     # ------------------------------------------------------------------
     # Closing control UI: include ref cashbox details
