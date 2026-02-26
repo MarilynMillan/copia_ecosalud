@@ -6,7 +6,7 @@ import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { _t } from "@web/core/l10n/translation";
 
 export class CashMovePopupRefCurrency extends AbstractAwaitablePopup {
-    static template = "CashMovePopupRefCurrency";
+    static template = "pos_show_dual_currency.CashMovePopupRefCurrency";
 
     setup() {
         super.setup();

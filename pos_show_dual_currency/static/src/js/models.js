@@ -82,7 +82,7 @@ patch(Order.prototype, {
         const trm = getRefRate(this.pos);
         result.total_with_tax_ref = this.pos.format_currency_ref(this.get_total_with_tax() * trm);
         result.total_tax_ref = this.pos.format_currency_ref(this.get_total_tax() * trm);
-        result.amount_total_ref = this.get_total_with_tax() * trm; // raw float for calculations if needed
+        result.amount_total_ref = this.get_total_with_tax() * trm;
         return result;
     },
 });

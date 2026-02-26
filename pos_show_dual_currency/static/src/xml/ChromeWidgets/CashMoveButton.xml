@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <t t-name="CashMoveButtonRefCurrency" owl="1">
+    <t t-name="pos_show_dual_currency.CashMoveButtonRefCurrency" owl="1">
         <li class="menu-item navbar-button" t-on-click="onClickUSD">
             <a class="dropdown-item py-2">
                 <i class="fa fa-money me-2" aria-hidden="true"></i>

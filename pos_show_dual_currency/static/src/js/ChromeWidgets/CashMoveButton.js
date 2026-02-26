@@ -7,7 +7,7 @@ import { _t } from "@web/core/l10n/translation";
 import { CashMovePopupRefCurrency } from "../Popups/CashMovePopup";
 
 export class CashMoveButtonRefCurrency extends Component {
-    static template = "CashMoveButtonRefCurrency";
+    static template = "pos_show_dual_currency.CashMoveButtonRefCurrency";
 
     setup() {
         this.pos = usePos();
