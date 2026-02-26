@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <!-- Orderline in receipt is actually OrderlineReceipt? No, in v17 it is Orderline component used in OrderReceipt? -->
+        <!-- In ReceiptScreen, the component is OrderlineReceipt (or similar). -->
+        <!-- Let's check the name. It is point_of_sale.OrderlineReceipt -->
+    </t>
+
+    <t t-inherit="point_of_sale.OrderlineReceipt" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('pos-receipt-right-align')]" position="inside">
+            <t t-if="line.price_display_ref">
+                <br/>
+                <span style="color:red; font-size: 0.8em;">
+                    <t t-esc="line.price_display_ref"/>
+                </span>
+            </t>
+        </xpath>
+    </t>
+
+</templates>

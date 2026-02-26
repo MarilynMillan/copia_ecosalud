@@ -41,8 +41,6 @@
             'pos_show_dual_currency/static/src/js/Popups/CashMovePopup.js',
             'pos_show_dual_currency/static/src/js/Popups/CashOpeningPopup.js',
             'pos_show_dual_currency/static/src/js/Popups/ClosePosPopup.js',
-            'pos_show_dual_currency/static/src/js/Receipt/OrderlineReceipt.js',
-            'pos_show_dual_currency/static/src/js/Receipt/OrderReceipt.js',
 
             # 3. VISTAS XML
             'pos_show_dual_currency/static/src/xml/ChromeWidgets/TRM.xml',
@@ -51,11 +49,12 @@
             'pos_show_dual_currency/static/src/xml/Popups/CashMovePopup.xml',
             'pos_show_dual_currency/static/src/xml/Popups/CashOpeningPopup.xml',
             'pos_show_dual_currency/static/src/xml/Popups/ClosePosPopup.xml',
-            'pos_show_dual_currency/static/src/xml/Popups/MoneyDetailsPopup.xml',
             'pos_show_dual_currency/static/src/xml/Popups/ProductConfiguratorPopup.xml',
             'pos_show_dual_currency/static/src/xml/Screens/PaymentScreen/PaymentScreenPaymentLines.xml',
             'pos_show_dual_currency/static/src/xml/Screens/PaymentScreen/PaymentScreenStatus.xml',
             'pos_show_dual_currency/static/src/xml/TicketScreen/TicketScreen.xml',
+            'pos_show_dual_currency/static/src/xml/Receipt/OrderReceipt.xml',
+            'pos_show_dual_currency/static/src/xml/Receipt/OrderlineReceipt.xml',
             'pos_show_dual_currency/static/src/xml/pos.xml',
         ],
     },
