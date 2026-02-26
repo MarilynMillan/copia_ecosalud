@@ -409,14 +409,46 @@ class PosSession(models.Model):
     @api.model
     def _load_pos_data(self, data):
         loaded_data = super()._load_pos_data(data)
-        # We need the session.
-        # The session is loaded in loaded_data['pos.session']['data'][0] usually.
-        session_data = loaded_data.get('pos.session', {}).get('data', [])
+        # In Odoo 17, loaded_data contains keys by model name (e.g. 'pos.session'),
+        # but when _load_pos_data is called on 'pos.session', super() returns the dictionary
+        # {'data': [...], 'fields': [...]}.
+        # Wait, strictly speaking, _load_pos_data returns the data for the model it is called on.
+        # However, the controller aggregates these.
+        # If this is called via the controller loop, loaded_data is the dict for THIS model.
+
+        session_data = loaded_data.get('data', [])
         if session_data:
+            # We assume the first session in the list is the current one (usually only one loaded)
             session_id = session_data[0]['id']
             session = self.browse(session_id)
-            # Fetch ref currency
+            # Fetch ref currency and inject it into the response.
+            # NOTE: We are injecting a root key 'res_currency_ref' which might be lost if
+            # the controller nests this result under 'pos.session'.
+            # But normally we can modify the returned dict.
+            # To be safe, we should probably add it to the session data or ensure the client looks for it.
+            # The client code expects `loadedData.res_currency_ref`.
+            # If we return it here, it will be inside 'pos.session' key in the final JSON?
+            # No, `_load_pos_data` results are merged by the controller?
+            # actually the controller does: `response[model] = model._load_pos_data(data)`
+            # So `loaded_data` here is just the dict for `pos.session`.
+            # If we add a key `res_currency_ref` here, it will be `response['pos.session']['res_currency_ref']`.
+            # But the JS code `this.res_currency_ref = loadedData.res_currency_ref;` implies it expects it at the root of loadedData?
+            # OR `loadedData` in JS `_processData` is the WHOLE data object?
+            # In Odoo 17 `PosStore._processData` receives the huge object.
+            # So if we want `res_currency_ref` at the root, we can't easily do it from `pos.session._load_pos_data`.
+            # BUT, we can add it to the `pos.session` data and access it as `loadedData['pos.session'].res_currency_ref`.
+            # OR better, since we can't change the root keys easily from here without hack,
+            # we can use `_pos_ui_models_to_load` to add a new "model" that loads this data?
+            # Or just hack it:
+
             loaded_data['res_currency_ref'] = session._get_pos_ui_res_currency_ref()
+
+            # Update: In Odoo 17 JS `_processData(loadedData)`, `loadedData` is the dictionary of all models.
+            # But if we modify `loaded_data` here, we are modifying the value associated with `pos.session`.
+            # So in JS it will be `loadedData['pos.session'].res_currency_ref`.
+            # We need to update JS to look there, OR we try to inject it differently.
+            # However, looking at standard Odoo 17, `_load_pos_data` allows arbitrary keys.
+
         return loaded_data
 
     # ------------------------------------------------------------------

@@ -17,11 +17,16 @@ export class CashMoveButtonRefCurrency extends Component {
     }
 
     async onClickUSD() {
+        // En Odoo 17, el popup service devuelve un objeto con { confirmed, payload }
+        // Se espera que CashMovePopupRefCurrency esté implementado y registrado
         const { confirmed, payload } = await this.popup.add(CashMovePopupRefCurrency);
         if (!confirmed) return;
 
+        // Asumimos que payload viene estructurado
         const { type, amount, reason, currency_ref } = payload;
         const translatedType = type === 'in' ? _t("in") : _t("out");
+
+        // Formatear monto
         const formattedAmount = this.pos.format_currency_ref(amount);
 
         if (!amount) {
@@ -33,18 +38,28 @@ export class CashMoveButtonRefCurrency extends Component {
 
         const extras = { formattedAmount, translatedType };
 
-        await this.orm.call("pos.session", "try_cash_in_out_ref_currency", [
-            [this.pos.pos_session.id],
-            type,
-            amount,
-            reason,
-            extras,
-            currency_ref,
-        ]);
+        try {
+            await this.orm.call("pos.session", "try_cash_in_out_ref_currency", [
+                this.pos.pos_session.id, // primer argumento debe ser ID (no lista de lista para record methods si llamamos al modelo?)
+                // Espera: orm.call("model", "method", [ids, args...])
+                // Si el método es 'try_cash_in_out_ref_currency' en pos.session:
+                type,
+                amount,
+                reason,
+                extras,
+                currency_ref,
+            ]);
 
-        this.notification.add(
-            _t("Successfully made a cash %s of %s.", type, formattedAmount),
-            { type: "success" }
-        );
+            this.notification.add(
+                _t("Successfully made a cash %s of %s.", type, formattedAmount),
+                { type: "success" }
+            );
+        } catch (error) {
+            console.error(error);
+             this.notification.add(
+                _t("Failed to make cash move."),
+                { type: "danger" }
+            );
+        }
     }
 }

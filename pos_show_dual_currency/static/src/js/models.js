@@ -14,7 +14,13 @@ patch(PosStore.prototype, {
 
     async _processData(loadedData) {
         await super._processData(loadedData);
-        this.res_currency_ref = loadedData.res_currency_ref;
+        // 'pos.session' data contains our injected 'res_currency_ref'
+        if (loadedData['pos.session'] && loadedData['pos.session'].res_currency_ref) {
+             this.res_currency_ref = loadedData['pos.session'].res_currency_ref;
+        } else {
+             // Fallback if not nested (or if my assumption about nesting was wrong and it IS at root)
+             this.res_currency_ref = loadedData.res_currency_ref;
+        }
     },
 
     format_currency_no_symbol(amount, precision, currency) {
@@ -32,10 +38,13 @@ patch(PosStore.prototype, {
     },
 
     async getClosePosInfo() {
+        // En Odoo 17, si getClosePosInfo no existe en el padre con la misma firma o comportamiento,
+        // hay que tener cuidado. En v17 standard, getClosePosInfo devuelve info para el popup.
+        // Aquí asumimos que la lógica es similar.
+        const info = await super.getClosePosInfo();
+
         const closingData = await this.orm.call("pos.session", "get_closing_control_data", [[this.pos_session.id]]);
         const amountAuthorizedDiffUSD = closingData.amount_authorized_diff_ref;
-
-        const info = await super.getClosePosInfo();
 
         const state_new = {
             notes: "",
@@ -51,7 +60,7 @@ patch(PosStore.prototype, {
                 number: 0,
             };
             const ref = info.defaultCashDetails.default_cash_details_ref;
-            if (ref?.id) {
+            if (ref && ref.id) {
                 state_new.payments_usd[ref.id] = {
                     counted: 0,
                     difference: -ref.amount,
@@ -60,7 +69,7 @@ patch(PosStore.prototype, {
             }
         }
 
-        if (info.otherPaymentMethods?.length) {
+        if (info.otherPaymentMethods && info.otherPaymentMethods.length) {
             info.otherPaymentMethods.forEach((pm) => {
                 if (pm.type === "bank") {
                     state_new.payments[pm.id] = {

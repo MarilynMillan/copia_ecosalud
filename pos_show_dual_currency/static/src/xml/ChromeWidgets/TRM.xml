@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
+    <!-- Define the TRM (Exchange Rate) Component -->
     <t t-name="pos_show_dual_currency.TRM" owl="1">
         <div class="oe_status">
-            <span>TRM $: <span t-esc="trm"/></span>
+            <div class="oe_icon oe_green">
+                <i class="fa fa-money" role="img" aria-label="TRM" title="TRM"></i>
+            </div>
+            <div class="oe_status_text">
+                TRM $: <t t-esc="trm"/>
+            </div>
         </div>
     </t>
 
+    <!-- Define the Cash Move Button Component -->
+    <t t-name="pos_show_dual_currency.CashMoveButtonRefCurrency" owl="1">
+         <div class="oe_status" t-on-click="onClickUSD">
+            <div class="oe_icon oe_green">
+                <i class="fa fa-usd" role="img" aria-label="Cash Move Ref" title="Cash Move Ref"></i>
+            </div>
+            <div class="oe_status_text">
+                Cash Move Ref
+            </div>
+        </div>
+    </t>
+
+    <!-- Inherit Navbar to inject the widgets -->
     <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('status-buttons')]" position="inside">
-            <TRM/>
+             <t t-if="env.services.pos.config.show_dual_currency">
+                 <TRM />
+                 <CashMoveButtonRefCurrency />
+             </t>
         </xpath>
     </t>
 

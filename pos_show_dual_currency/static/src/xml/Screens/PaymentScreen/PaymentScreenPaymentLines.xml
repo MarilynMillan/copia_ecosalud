@@ -2,10 +2,12 @@
 <templates id="template" xml:space="preserve">
 
     <t t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension" owl="1">
-        <!-- Inserta después del monto principal (último <t> dentro de payment-amount) -->
-        <xpath expr="//div[hasclass('payment-amount')]/t[last()]" position="after">
-            <span style="color:red;"> / </span>
-            <span style="color:red;" t-esc="formatLineAmountUsd(line)"/>
+        <xpath expr="//div[hasclass('payment-amount')]" position="inside">
+             <t t-if="env.services.pos.config.show_dual_currency">
+                <span class="payment-amount-dual" style="color:red; font-size: 0.8em; margin-left: 5px;">
+                    / <t t-esc="formatLineAmountUsd(line)"/>
+                </span>
+            </t>
         </xpath>
     </t>
 

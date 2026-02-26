@@ -3,31 +3,13 @@
 
     <t t-inherit="point_of_sale.PaymentScreenStatus" t-inherit-mode="extension" owl="1">
 
-        <xpath expr="//section[hasclass('paymentlines-container')]" position="inside">
-            <t t-set="ref_rate"
-               t-value="env.services.pos.pos_session.tax_today or (env.services.pos.config.show_currency_rate != 0 ? (1/env.services.pos.config.show_currency_rate) : 1)"/>
-        </xpath>
-
-        <xpath expr="//div[hasclass('total')]/t[@t-esc='totalDueText']" position="after">
-            <span style="color:red;font-size:35px;"> / </span>
-            <span style="color:red;font-size:35px;"
-                  t-esc="env.services.pos.format_currency_ref(props.order.get_due() * ref_rate)"/>
-        </xpath>
-
-        <xpath expr="//div[hasclass('payment-status-remaining')]/span[hasclass('amount')]/t[@t-esc='remainingText']" position="after">
-            <span style="color:red;"> / </span>
-            <span style="color:red;" t-esc="remainingTextUSD"/>
-        </xpath>
-
-        <xpath expr="//div[hasclass('payment-status-total-due')]/span[2]/t[@t-esc='totalDueText']" position="after">
-            <span style="color:red;"> / </span>
-            <span style="color:red;"
-                  t-esc="env.services.pos.format_currency_ref(props.order.get_due() * ref_rate)"/>
-        </xpath>
-
-        <xpath expr="//div[hasclass('payment-status-change')]/span[hasclass('amount')]/t[@t-esc='changeText']" position="after">
-            <span style="color:red;"> / </span>
-            <span style="color:red;" t-esc="changeTextUSD"/>
+        <xpath expr="//div[hasclass('total')]" position="inside">
+             <t t-if="env.services.pos.config.show_dual_currency">
+                <t t-set="ref_rate" t-value="env.services.pos.pos_session.tax_today or (env.services.pos.config.show_currency_rate != 0 ? (1/env.services.pos.config.show_currency_rate) : 1)"/>
+                <div class="total-dual" style="color: red; font-size: 0.8em; margin-top: 5px;">
+                     / <t t-esc="env.services.pos.format_currency_ref(props.order.get_due() * ref_rate)"/>
+                </div>
+            </t>
         </xpath>
 
     </t>
