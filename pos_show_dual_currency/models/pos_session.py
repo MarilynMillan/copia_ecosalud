@@ -348,50 +348,18 @@ class PosSession(models.Model):
     @api.model
     def _load_pos_data(self, data):
         loaded_data = super()._load_pos_data(data)
-        # Inject res_currency_ref
-        # Note: 'self' here is the model, not a record. We need the session context.
-        # _load_pos_data(self, data)
-        # Wait, how do we get the session ID?
-        # In v17, _load_pos_data is called on the model. It receives 'data' which might contain session info?
-        # Actually, usually session_id is passed in context or data.
-        # But wait, self.env.user...
-        # Let's look at how _load_pos_data works in 17.
-        # def _load_pos_data(self, data):
-        #     domain = self._loader_params_pos_session()['search_params']['domain']
-        #     pos_session = self.search(domain)
-        # Ah, typically load_pos_data is called by the controller which passes domain/fields.
-        # But here we are overriding the method on the model.
-        # The session is typically retrieved via domain in data? No.
-        # Let's check knowledgebase for _load_pos_data signature.
-        # Knowledgebase lookup...
-        # Assuming standard v17 pattern:
-        # We can rely on `self.env['pos.session'].search([('state', '=', 'opening_control')])` or similar? No.
 
-        # Actually, in v17, the controller calls:
-        # session_info = request.env['pos.session'].browse(session_id).get_pos_ui_product_category(...)
-        # No, it calls `models._load_pos_data(data)`.
+        session_data = loaded_data.get('data', [])
+        if session_data:
+            session_id = session_data[0]['id']
+            session = self.browse(session_id)
+            loaded_data['res_currency_ref'] = session._get_pos_ui_res_currency_ref()
 
-        # Let's stick to the previous pattern using `_pos_data_process` if it exists in v17?
-        # `_pos_data_process` was v16.
-        # In v17 it is `_load_pos_data`.
-
-        # However, to avoid complexity if I'm not sure about getting the session instance inside the class method:
-        # I can see `pos.session` fields are loaded.
-        # I added `cash_register_balance_start_mn_ref` to `pos.session` loader params via `_loader_params_pos_session` override (if that still works).
-        # Does `_loader_params_pos_session` work in v17?
-        # Point of Sale `pos_session.py` in v17 DOES define `_loader_params_pos_session`.
-        # So overrides to `_loader_params_...` ARE valid in v17 for core models.
-        pass
         return loaded_data
-
-    # Re-adding the loader params methods as they ARE valid in v17 for core models loaded via _load_pos_data loop.
 
     @api.model
     def _loader_params_pos_session(self):
         params = super()._loader_params_pos_session()
-        # params['search_params']['fields'].append('cash_register_balance_start_mn_ref')
-        # But 'search_params' might be missing if super doesn't return it structured that way?
-        # V17 structure: {'search_params': {'domain': ..., 'fields': [...]}}
         if params and 'search_params' in params and 'fields' in params['search_params']:
              params['search_params']['fields'].append('cash_register_balance_start_mn_ref')
         return params
@@ -402,54 +370,6 @@ class PosSession(models.Model):
         if params and 'search_params' in params and 'fields' in params['search_params']:
              params['search_params']['fields'].append('currency_id')
         return params
-
-    # For res_currency_ref, we need to inject it manually into the response because it's not a standard loaded model list item
-    # or we can treat it as part of 'res.currency' load but we want a specific key 'res_currency_ref'.
-
-    @api.model
-    def _load_pos_data(self, data):
-        loaded_data = super()._load_pos_data(data)
-        # In Odoo 17, loaded_data contains keys by model name (e.g. 'pos.session'),
-        # but when _load_pos_data is called on 'pos.session', super() returns the dictionary
-        # {'data': [...], 'fields': [...]}.
-        # Wait, strictly speaking, _load_pos_data returns the data for the model it is called on.
-        # However, the controller aggregates these.
-        # If this is called via the controller loop, loaded_data is the dict for THIS model.
-
-        session_data = loaded_data.get('data', [])
-        if session_data:
-            # We assume the first session in the list is the current one (usually only one loaded)
-            session_id = session_data[0]['id']
-            session = self.browse(session_id)
-            # Fetch ref currency and inject it into the response.
-            # NOTE: We are injecting a root key 'res_currency_ref' which might be lost if
-            # the controller nests this result under 'pos.session'.
-            # But normally we can modify the returned dict.
-            # To be safe, we should probably add it to the session data or ensure the client looks for it.
-            # The client code expects `loadedData.res_currency_ref`.
-            # If we return it here, it will be inside 'pos.session' key in the final JSON?
-            # No, `_load_pos_data` results are merged by the controller?
-            # actually the controller does: `response[model] = model._load_pos_data(data)`
-            # So `loaded_data` here is just the dict for `pos.session`.
-            # If we add a key `res_currency_ref` here, it will be `response['pos.session']['res_currency_ref']`.
-            # But the JS code `this.res_currency_ref = loadedData.res_currency_ref;` implies it expects it at the root of loadedData?
-            # OR `loadedData` in JS `_processData` is the WHOLE data object?
-            # In Odoo 17 `PosStore._processData` receives the huge object.
-            # So if we want `res_currency_ref` at the root, we can't easily do it from `pos.session._load_pos_data`.
-            # BUT, we can add it to the `pos.session` data and access it as `loadedData['pos.session'].res_currency_ref`.
-            # OR better, since we can't change the root keys easily from here without hack,
-            # we can use `_pos_ui_models_to_load` to add a new "model" that loads this data?
-            # Or just hack it:
-
-            loaded_data['res_currency_ref'] = session._get_pos_ui_res_currency_ref()
-
-            # Update: In Odoo 17 JS `_processData(loadedData)`, `loadedData` is the dictionary of all models.
-            # But if we modify `loaded_data` here, we are modifying the value associated with `pos.session`.
-            # So in JS it will be `loadedData['pos.session'].res_currency_ref`.
-            # We need to update JS to look there, OR we try to inject it differently.
-            # However, looking at standard Odoo 17, `_load_pos_data` allows arbitrary keys.
-
-        return loaded_data
 
     # ------------------------------------------------------------------
     # Closing control UI: include ref cashbox details
@@ -629,112 +549,3 @@ class PosSession(models.Model):
 
         self.write({"state": "closed"})
         return True
-
-    # ------------------------------------------------------------------
-    # Accounting helpers with currency conversion (kept from your v16)
-    # ------------------------------------------------------------------
-    def _create_cash_statement_lines_and_cash_move_lines(self, data):
-        MoveLine = data.get("MoveLine")
-        split_receivables_cash = data.get("split_receivables_cash")
-        combine_receivables_cash = data.get("combine_receivables_cash")
-
-        split_cash_statement_line_vals = []
-        split_cash_receivable_vals = []
-        for payment, amounts in split_receivables_cash.items():
-            journal_id = payment.payment_method_id.journal_id.id
-            split_cash_statement_line_vals.append(
-                self._get_split_statement_line_vals(journal_id, amounts["amount"], payment)
-            )
-            split_cash_receivable_vals.append(
-                self._get_split_receivable_vals(payment, amounts["amount"], amounts["amount_converted"])
-            )
-
-        combine_cash_statement_line_vals = []
-        combine_cash_receivable_vals = []
-        for payment_method, amounts in combine_receivables_cash.items():
-            if not float_is_zero(amounts["amount"], precision_rounding=self.currency_id.rounding):
-                amount = amounts["amount"]
-                if payment_method.currency_id and payment_method.currency_id != self.company_id.currency_id:
-                    amount = amount * (self.config_id.show_currency_rate or 1.0)
-
-                combine_cash_statement_line_vals.append(
-                    self._get_combine_statement_line_vals(payment_method.journal_id.id, amount, payment_method)
-                )
-                combine_cash_receivable_vals.append(
-                    self._get_combine_receivable_vals(payment_method, amount, amounts["amount_converted"])
-                )
-
-        BankStatementLine = self.env["account.bank.statement.line"]
-        split_cash_statement_lines = BankStatementLine.create(split_cash_statement_line_vals).mapped("move_id.line_ids").filtered(
-            lambda line: line.account_id.account_type == "asset_receivable"
-        )
-        combine_cash_statement_lines = BankStatementLine.create(combine_cash_statement_line_vals).mapped("move_id.line_ids").filtered(
-            lambda line: line.account_id.account_type == "asset_receivable"
-        )
-        split_cash_receivable_lines = MoveLine.create(split_cash_receivable_vals)
-        combine_cash_receivable_lines = MoveLine.create(combine_cash_receivable_vals)
-
-        data.update(
-            {
-                "split_cash_statement_lines": split_cash_statement_lines,
-                "combine_cash_statement_lines": combine_cash_statement_lines,
-                "split_cash_receivable_lines": split_cash_receivable_lines,
-                "combine_cash_receivable_lines": combine_cash_receivable_lines,
-            }
-        )
-        return data
-
-    def _create_bank_payment_moves(self, data):
-        combine_receivables_bank = data.get("combine_receivables_bank")
-        split_receivables_bank = data.get("split_receivables_bank")
-        bank_payment_method_diffs = data.get("bank_payment_method_diffs")
-        MoveLine = data.get("MoveLine")
-        payment_method_to_receivable_lines = {}
-        payment_to_receivable_lines = {}
-
-        for payment_method, amounts in combine_receivables_bank.items():
-            combine_receivable_line = MoveLine.create(
-                self._get_combine_receivable_vals(payment_method, amounts["amount"], amounts["amount_converted"])
-            )
-
-            amount = amounts["amount"]
-            amount_converted = amounts["amount_converted"]
-            if payment_method.currency_id and payment_method.currency_id != self.company_id.currency_id:
-                rate = self.config_id.show_currency_rate or 1.0
-                amount = amount * rate
-                amount_converted = amount_converted * rate
-
-            amounts["amount"] = amount
-            amounts["amount_converted"] = amount_converted
-
-            payment_receivable_line = self._create_combine_account_payment(
-                payment_method, amounts, diff_amount=bank_payment_method_diffs.get(payment_method.id) or 0
-            )
-            payment_method_to_receivable_lines[payment_method] = combine_receivable_line | payment_receivable_line
-
-        for payment, amounts in split_receivables_bank.items():
-            split_receivable_line = MoveLine.create(
-                self._get_split_receivable_vals(payment, amounts["amount"], amounts["amount_converted"])
-            )
-
-            amount = amounts["amount"]
-            amount_converted = amounts["amount_converted"]
-            if payment.currency_id and payment.currency_id != self.company_id.currency_id:
-                rate = self.config_id.show_currency_rate or 1.0
-                amount = amount * rate
-                amount_converted = amount_converted * rate
-
-            amounts["amount"] = amount
-            amounts["amount_converted"] = amount_converted
-
-            payment_receivable_line = self._create_split_account_payment(payment, amounts)
-            payment_to_receivable_lines[payment] = split_receivable_line | payment_receivable_line
-
-        for bank_payment_method in self.payment_method_ids.filtered(lambda pm: pm.type == "bank" and pm.split_transactions):
-            self._create_diff_account_move_for_split_payment_method(
-                bank_payment_method, bank_payment_method_diffs.get(bank_payment_method.id) or 0
-            )
-
-        data["payment_method_to_receivable_lines"] = payment_method_to_receivable_lines
-        data["payment_to_receivable_lines"] = payment_to_receivable_lines
-        return data
