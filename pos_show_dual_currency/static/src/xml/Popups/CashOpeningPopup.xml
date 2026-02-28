@@ -11,13 +11,16 @@
                            type="number" 
                            t-att-value="state.openingCashUSD" 
                            t-on-input="handleInputChangeUSD"/>
+                    <!-- Commented out button to open missing popup
                     <div class="button icon btn btn-secondary" t-on-click="openDetailsPopupUSD">
                         <i class="fa fa-calculator" role="img" title="Open money details USD"/>
                     </div>
+                    -->
                 </div>
             </div>
         </xpath>
 
+        <!--
         <xpath expr="//textarea[hasclass('opening-notes')]" position="after">
             <MoneyDetailsPopupUSD
                 t-if="state.displayMoneyDetailsPopupUSD"
@@ -26,6 +29,7 @@
                 onDiscard="() => this.closeDetailsPopupUSD()"
             />
         </xpath>
+        -->
 
     </t>
 

@@ -6,7 +6,8 @@
             <field name="model">pos.config</field>
             <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='last_session_closing_cash']/.." position="after">
+                <!-- Changed to target field directly to avoid fragility with '..' -->
+                <xpath expr="//field[@name='last_session_closing_cash']" position="after">
                     <span style="color: red">
                         | <field name="last_session_closing_cash_me_ref" widget="monetary" options="{'currency_field': 'show_currency'}"/>
                         <field name="show_currency" invisible="1"/>

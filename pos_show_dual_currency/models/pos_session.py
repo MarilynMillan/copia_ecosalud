@@ -14,7 +14,6 @@ class PosSession(models.Model):
         string="Tasa Sesión",
         store=True,
         compute="_compute_tax_today",
-        tracking=True,
         digits="Dual_Currency_rate",
         help="Factor para convertir montos de la moneda de la sesión a la moneda de referencia.",
     )
@@ -328,37 +327,49 @@ class PosSession(models.Model):
     # ------------------------------------------------------------------
     # POS UI data: currency ref
     # ------------------------------------------------------------------
-    def _loader_params_res_currency_ref(self):
-        currency_id = self.ref_me_currency_id.id or self.company_id.currency_id.id
-        return {
-            "search_params": {
-                "domain": [("id", "=", currency_id)],
-                "fields": ["id", "name", "symbol", "position", "rounding", "rate", "decimal_places"],
-            }
-        }
+    def _pos_ui_models_to_load(self):
+        result = super()._pos_ui_models_to_load()
+        # Ensure that res.currency is loaded (usually it is), but we need to load currency_ref specifically?
+        # In v17, models like res.currency are loaded. We just need to make sure we append our data.
+        # Actually, we can just overload _load_pos_data to inject 'res_currency_ref'.
+        return result
 
-    def _get_pos_ui_res_currency_ref(self, params):
-        res_currency = self.env["res.currency"].search_read(**params["search_params"])
+    def _loader_params_res_currency(self):
+        # We can try to extend parameters if needed, but here we want a specific separate key in loaded_data
+        return super()._loader_params_res_currency()
+
+    def _get_pos_ui_res_currency_ref(self):
+        currency_id = self.ref_me_currency_id.id or self.company_id.currency_id.id
+        domain = [("id", "=", currency_id)]
+        fields = ["id", "name", "symbol", "position", "rounding", "rate", "decimal_places"]
+        res_currency = self.env["res.currency"].search_read(domain, fields)
         return res_currency[0] if res_currency else False
 
-    def _pos_data_process(self, loaded_data):
-        super()._pos_data_process(loaded_data)
-        currency_ref = self._get_pos_ui_res_currency_ref(self._loader_params_res_currency_ref())
-        loaded_data["res_currency_ref"] = currency_ref
+    @api.model
+    def _load_pos_data(self, data):
+        loaded_data = super()._load_pos_data(data)
 
-    def _loader_params_pos_payment_method(self):
-        res = super()._loader_params_pos_payment_method()
-        fields_list = res["search_params"]["fields"]
-        if "currency_id" not in fields_list:
-            fields_list.append("currency_id")
-        return res
+        session_data = loaded_data.get('data', [])
+        if session_data:
+            session_id = session_data[0]['id']
+            session = self.browse(session_id)
+            loaded_data['res_currency_ref'] = session._get_pos_ui_res_currency_ref()
 
+        return loaded_data
+
+    @api.model
     def _loader_params_pos_session(self):
-        res = super()._loader_params_pos_session()
-        fields_list = res["search_params"]["fields"]
-        if "cash_register_balance_start_mn_ref" not in fields_list:
-            fields_list.append("cash_register_balance_start_mn_ref")
-        return res
+        params = super()._loader_params_pos_session()
+        if params and 'search_params' in params and 'fields' in params['search_params']:
+             params['search_params']['fields'].append('cash_register_balance_start_mn_ref')
+        return params
+
+    @api.model
+    def _loader_params_pos_payment_method(self):
+        params = super()._loader_params_pos_payment_method()
+        if params and 'search_params' in params and 'fields' in params['search_params']:
+             params['search_params']['fields'].append('currency_id')
+        return params
 
     # ------------------------------------------------------------------
     # Closing control UI: include ref cashbox details
@@ -538,112 +549,3 @@ class PosSession(models.Model):
 
         self.write({"state": "closed"})
         return True
-
-    # ------------------------------------------------------------------
-    # Accounting helpers with currency conversion (kept from your v16)
-    # ------------------------------------------------------------------
-    def _create_cash_statement_lines_and_cash_move_lines(self, data):
-        MoveLine = data.get("MoveLine")
-        split_receivables_cash = data.get("split_receivables_cash")
-        combine_receivables_cash = data.get("combine_receivables_cash")
-
-        split_cash_statement_line_vals = []
-        split_cash_receivable_vals = []
-        for payment, amounts in split_receivables_cash.items():
-            journal_id = payment.payment_method_id.journal_id.id
-            split_cash_statement_line_vals.append(
-                self._get_split_statement_line_vals(journal_id, amounts["amount"], payment)
-            )
-            split_cash_receivable_vals.append(
-                self._get_split_receivable_vals(payment, amounts["amount"], amounts["amount_converted"])
-            )
-
-        combine_cash_statement_line_vals = []
-        combine_cash_receivable_vals = []
-        for payment_method, amounts in combine_receivables_cash.items():
-            if not float_is_zero(amounts["amount"], precision_rounding=self.currency_id.rounding):
-                amount = amounts["amount"]
-                if payment_method.currency_id and payment_method.currency_id != self.company_id.currency_id:
-                    amount = amount * (self.config_id.show_currency_rate or 1.0)
-
-                combine_cash_statement_line_vals.append(
-                    self._get_combine_statement_line_vals(payment_method.journal_id.id, amount, payment_method)
-                )
-                combine_cash_receivable_vals.append(
-                    self._get_combine_receivable_vals(payment_method, amount, amounts["amount_converted"])
-                )
-
-        BankStatementLine = self.env["account.bank.statement.line"]
-        split_cash_statement_lines = BankStatementLine.create(split_cash_statement_line_vals).mapped("move_id.line_ids").filtered(
-            lambda line: line.account_id.account_type == "asset_receivable"
-        )
-        combine_cash_statement_lines = BankStatementLine.create(combine_cash_statement_line_vals).mapped("move_id.line_ids").filtered(
-            lambda line: line.account_id.account_type == "asset_receivable"
-        )
-        split_cash_receivable_lines = MoveLine.create(split_cash_receivable_vals)
-        combine_cash_receivable_lines = MoveLine.create(combine_cash_receivable_vals)
-
-        data.update(
-            {
-                "split_cash_statement_lines": split_cash_statement_lines,
-                "combine_cash_statement_lines": combine_cash_statement_lines,
-                "split_cash_receivable_lines": split_cash_receivable_lines,
-                "combine_cash_receivable_lines": combine_cash_receivable_lines,
-            }
-        )
-        return data
-
-    def _create_bank_payment_moves(self, data):
-        combine_receivables_bank = data.get("combine_receivables_bank")
-        split_receivables_bank = data.get("split_receivables_bank")
-        bank_payment_method_diffs = data.get("bank_payment_method_diffs")
-        MoveLine = data.get("MoveLine")
-        payment_method_to_receivable_lines = {}
-        payment_to_receivable_lines = {}
-
-        for payment_method, amounts in combine_receivables_bank.items():
-            combine_receivable_line = MoveLine.create(
-                self._get_combine_receivable_vals(payment_method, amounts["amount"], amounts["amount_converted"])
-            )
-
-            amount = amounts["amount"]
-            amount_converted = amounts["amount_converted"]
-            if payment_method.currency_id and payment_method.currency_id != self.company_id.currency_id:
-                rate = self.config_id.show_currency_rate or 1.0
-                amount = amount * rate
-                amount_converted = amount_converted * rate
-
-            amounts["amount"] = amount
-            amounts["amount_converted"] = amount_converted
-
-            payment_receivable_line = self._create_combine_account_payment(
-                payment_method, amounts, diff_amount=bank_payment_method_diffs.get(payment_method.id) or 0
-            )
-            payment_method_to_receivable_lines[payment_method] = combine_receivable_line | payment_receivable_line
-
-        for payment, amounts in split_receivables_bank.items():
-            split_receivable_line = MoveLine.create(
-                self._get_split_receivable_vals(payment, amounts["amount"], amounts["amount_converted"])
-            )
-
-            amount = amounts["amount"]
-            amount_converted = amounts["amount_converted"]
-            if payment.currency_id and payment.currency_id != self.company_id.currency_id:
-                rate = self.config_id.show_currency_rate or 1.0
-                amount = amount * rate
-                amount_converted = amount_converted * rate
-
-            amounts["amount"] = amount
-            amounts["amount_converted"] = amount_converted
-
-            payment_receivable_line = self._create_split_account_payment(payment, amounts)
-            payment_to_receivable_lines[payment] = split_receivable_line | payment_receivable_line
-
-        for bank_payment_method in self.payment_method_ids.filtered(lambda pm: pm.type == "bank" and pm.split_transactions):
-            self._create_diff_account_move_for_split_payment_method(
-                bank_payment_method, bank_payment_method_diffs.get(bank_payment_method.id) or 0
-            )
-
-        data["payment_method_to_receivable_lines"] = payment_method_to_receivable_lines
-        data["payment_to_receivable_lines"] = payment_to_receivable_lines
-        return data

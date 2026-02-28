@@ -10,7 +10,7 @@ class PosOrderLine(models.Model):
                                          store=False)
     session_rate = fields.Float(string="Session Rate", store=True,
                                 related='order_id.session_rate',
-                                tracking=True, digits='Dual_Currency_rate')  # ✅ CORREGIDO
+                                digits='Dual_Currency_rate')
 
     price_unit_ref = fields.Float(string='Ref Unit Price', compute='_compute_amount_line_ref', readonly=True,
                                   help='Reference Currency Unit Price')

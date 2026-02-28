@@ -12,23 +12,22 @@ class PosPayment(models.Model):
                                                                                            limit=1), )
 
     tax_today = fields.Float(string="Tasa Sesión", store=True, related='session_id.tax_today',
-                             tracking=True, digits='Dual_Currency_rate')
+                             digits='Dual_Currency_rate')
 
-    amount_ref = fields.Monetary(currency_field='currency_id_dif', string='Monto Ref', store=True, readonly=True, compute='_compute_amount_ref', digits='Dual_Currency')
+    amount_ref = fields.Monetary(currency_field='currency_id_dif', string='Monto Ref', store=True, readonly=True, compute='_compute_amount_ref')
 
     @api.depends('amount', 'tax_today')
     def _compute_amount_ref(self):
         for payment in self:
             payment.amount_ref = payment.amount / (payment.tax_today if payment.tax_today > 0 else 1)
 
-    def name_get(self):
-        res = []
+    @api.depends('name', 'amount', 'currency_id', 'amount_ref', 'currency_id_dif')
+    def _compute_display_name(self):
         for payment in self:
             if payment.name:
-                res.append((payment.id, '%s %s - %s' % (payment.name, formatLang(self.env, payment.amount, currency_obj=payment.currency_id), formatLang(self.env, payment.amount_ref, currency_obj=payment.currency_id_dif))))
+                payment.display_name = '%s %s - %s' % (payment.name, formatLang(self.env, payment.amount, currency_obj=payment.currency_id), formatLang(self.env, payment.amount_ref, currency_obj=payment.currency_id_dif))
             else:
-                res.append((payment.id, '%s - %s' % (formatLang(self.env, payment.amount, currency_obj=payment.currency_id), formatLang(self.env, payment.amount_ref, currency_obj=payment.currency_id_dif))))
-        return res
+                payment.display_name = '%s - %s' % (formatLang(self.env, payment.amount, currency_obj=payment.currency_id), formatLang(self.env, payment.amount_ref, currency_obj=payment.currency_id_dif))
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):

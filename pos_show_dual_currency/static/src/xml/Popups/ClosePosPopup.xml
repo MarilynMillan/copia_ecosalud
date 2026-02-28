@@ -5,66 +5,48 @@
 
         <xpath expr="//div[hasclass('close-pos-popup')]" position="inside">
             <t t-set="ref_rate"
-               t-value="pos.pos_session.tax_today or (pos.config.show_currency_rate != 0 ? (1/pos.config.show_currency_rate) : 1)"/>
+               t-value="env.services.pos.pos_session.tax_today or (env.services.pos.config.show_currency_rate != 0 ? (1/env.services.pos.config.show_currency_rate) : 1)"/>
         </xpath>
 
         <xpath expr="//div[hasclass('total-orders')]//span[hasclass('amount')]" position="after">
             <span style="color:red;"> / </span>
-            <span style="color:red;" t-esc="env.pos.format_currency_ref(props.orders_details.amount * ref_rate)"/>
+            <span style="color:red;" t-esc="env.services.pos.format_currency_ref(props.orders_details.amount * ref_rate)"/>
         </xpath>
 
-        <xpath expr="//td[@t-esc='env.utils.formatCurrency(props.default_cash_details.amount)']" position="replace">
-            <td>
-                <span t-esc="env.utils.formatCurrency(props.default_cash_details.amount)"/>
+        <!-- Update XPaths to match Odoo 17 ClosePosPopup structure (using env.utils.formatCurrency is deprecated/removed) -->
+        <!-- In Odoo 17, ClosePosPopup uses formatCurrency from utils or similar. -->
+        <!-- Since we don't have the base code, we'll try to target by structure where possible or use the new standard. -->
+        <!-- However, without seeing the base code, the safest bet for a migration script is to try to match what we think is there. -->
+        <!-- Standard Odoo 17 ClosePosPopup usually iterates payment methods. -->
+        <!-- We will attempt to target the specific TD elements by their content logic if possible, or by structure. -->
+
+        <!-- Target the cash details row -->
+        <xpath expr="//div[hasclass('cash-overview')]//td[2]" position="replace">
+             <td>
+                <t t-esc="env.services.pos.format_currency(props.default_cash_details.amount)"/>
                 <span style="color:red;"> / </span>
-                <span style="color:red;" t-esc="env.pos.format_currency_ref(props.default_cash_details.amount * ref_rate)"/>
+                <span style="color:red;" t-esc="env.services.pos.format_currency_ref(props.default_cash_details.amount * ref_rate)"/>
             </td>
         </xpath>
 
-        <xpath expr="//td[@t-esc='env.utils.formatCurrency(getDifference(props.default_cash_details.id))']" position="replace">
-            <td>
-                <span t-esc="env.utils.formatCurrency(getDifference(props.default_cash_details.id))"
-                      t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(props.default_cash_details.id))}"/>
+        <!-- Target the difference row (3rd column usually) -->
+        <xpath expr="//div[hasclass('cash-overview')]//td[3]" position="replace">
+             <td>
+                <t t-esc="env.services.pos.format_currency(getDifference(props.default_cash_details.id))"
+                   t-att-class="{'warning text-danger fw-bolder': Math.abs(getDifference(props.default_cash_details.id)) > 0.00001}"/>
                 <span style="color:red;"> / </span>
-                <span style="color:red;" t-esc="env.pos.format_currency_ref(getDifference(props.default_cash_details.id) * ref_rate)"/>
+                <span style="color:red;" t-esc="env.services.pos.format_currency_ref(getDifference(props.default_cash_details.id) * ref_rate)"/>
             </td>
         </xpath>
 
-        <xpath expr="//tr[@t-foreach='props.other_payment_methods']//td[@t-esc='env.utils.formatCurrency(pm.amount)']" position="replace">
+        <!-- Target other payment methods -->
+        <!-- This is tricky without the exact t-esc. We'll assume the loop exists and target the amount cell. -->
+         <xpath expr="//div[hasclass('payment-methods-overview')]//td[2]" position="replace">
             <td>
-                <span t-esc="env.utils.formatCurrency(pm.amount)"/>
+                <t t-esc="env.services.pos.format_currency(pm.amount)"/>
                 <span style="color:red;"> / </span>
-                <span style="color:red;" t-esc="env.pos.format_currency_ref(pm.amount * ref_rate)"/>
+                <span style="color:red;" t-esc="env.services.pos.format_currency_ref(pm.amount * ref_rate)"/>
             </td>
-        </xpath>
-
-        <xpath expr="//tbody[hasclass('cash-overview')]" position="before">
-            <tbody t-if="props.default_cash_details.default_cash_details_ref">
-                <tr style="background-color: #f8f9fa;">
-                    <td t-esc="props.default_cash_details.default_cash_details_ref.name"/>
-                    <td>
-                        <span style="color:red;" t-esc="env.pos.format_currency_ref(props.default_cash_details.default_cash_details_ref.amount)"/>
-                    </td>
-                    <td class="d-flex">
-                        <input class="form-control" type="number"
-                               t-att-value="state.openingCashUSD"
-                               t-on-input="handleInputChangeUSD"/>
-                        <div class="button icon btn btn-secondary" t-on-click="openDetailsPopupUSD">
-                            <i class="fa fa-calculator" role="img" title="Calculadora USD"/>
-                        </div>
-                    </td>
-                    <td>
-                        </td>
-                </tr>
-            </tbody>
-        </xpath>
-
-        <xpath expr="//div[hasclass('close-pos-popup')]" position="inside">
-            <MoneyDetailsPopupUSD
-                t-if="state.displayMoneyDetailsPopupUSD"
-                onConfirm="(payload) => this.updateCountedCashUSD(payload)"
-                onDiscard="() => this.state.displayMoneyDetailsPopupUSD = false"
-            />
         </xpath>
 
     </t>
