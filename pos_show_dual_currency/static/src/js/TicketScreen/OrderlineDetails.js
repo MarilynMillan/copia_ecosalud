@@ -3,7 +3,7 @@
 import { patch } from "@web/core/utils/patch";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { Orderline } from "@point_of_sale/app/generic_components/orderline/orderline";
-import { getRefRate } from "../../utils/ref_rate";
+import { getRefRate } from "@pos_show_dual_currency/js/utils/ref_rate";
 
 patch(OrderlineDetails.prototype, "pos_show_dual_currency.TicketOrderlineDetails", {
     setup() {

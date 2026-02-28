@@ -3,44 +3,61 @@ from odoo.exceptions import ValidationError, UserError
 class PosConfig(models.Model):
     _inherit = "pos.config"
 
+
     show_dual_currency = fields.Boolean(
-        "Show dual currency", help="Show Other Currency in POS", default=True
+        string="Show Other Currency in POS", 
+        help="Muestra una segunda moneda en el POS (ej. USD en Venezuela)", 
+        default=True
     )
 
-    rate_company = fields.Float(string='Rate', related='currency_id.rate')
+    # CORRECCIÓN: Cambiamos 'Rate' por 'Tasa Compañía' para evitar duplicados
+    rate_company = fields.Float(
+        string='Rate Compañy', 
+        related='currency_id.rate', 
+        digits=(12, 6) # Es mejor definir dígitos para tasas
+    )
 
-    show_currency = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env['res.currency'].search([('name', '=', 'USD')], limit=1))
+    show_currency = fields.Many2one(
+        'res.currency', 
+        string='Moneda Secundaria', 
+        default=lambda self: self.env['res.currency'].search([('name', '=', 'USD')], limit=1)
+    )
 
-    show_currency_rate = fields.Float(string='Rate', related='show_currency.rate')
+    # CORRECCIÓN: Cambiamos 'Rate' por 'Tasa Dual'
+    show_currency_rate = fields.Float(
+        string='Rate Dual', 
+        related='show_currency.rate',
+        digits=(12, 6)
+    )
 
-    #show_currency_rate_real = fields.Float(string='Rate', related='show_currency.rate_real')# darrell
+    show_currency_symbol = fields.Char(
+        string="Simbol Rate Dual",
+        related='show_currency.symbol'
+    )
 
-    show_currency_symbol = fields.Char(related='show_currency.symbol')
-
-    show_currency_position = fields.Selection([('after', 'After'),
-                      ('before', 'Before'),
-                      ],related='show_currency.position')
+    # CORRECCIÓN: En v17, no es necesario re-definir la lista de selección en un related
+    show_currency_position = fields.Selection(
+        related='show_currency.position',
+        string="Position Ssimbol Dual"
+    )
 
     default_location_src_id = fields.Many2one(
-        "stock.location", related="picking_type_id.default_location_src_id"
+        "stock.location", 
+        related="picking_type_id.default_location_src_id",
+        string="Ubication the Origen"
     )
 
-
-    @api.constrains('pricelist_id', 'use_pricelist', 'available_pricelist_ids', 'journal_id', 'invoice_journal_id', 'payment_method_ids')
-    def _check_currencies(self):
+    @api.constrains('pricelist_id', 'use_pricelist', 'available_pricelist_ids', 'invoice_journal_id')
+    def _check_currencies_dual(self):
         for config in self:
+            # Validación de listas de precios (estándar v17)
             if config.use_pricelist and config.pricelist_id not in config.available_pricelist_ids:
-                raise ValidationError(_("The default pricelist must be included in the available pricelists."))
+                raise ValidationError(_("La lista de precios por defecto debe estar incluida en las disponibles."))
 
-            # Check if the config's payment methods are compatible with its currency
-            # for pm in config.payment_method_ids:
-            #     if pm.journal_id and pm.journal_id.currency_id and pm.journal_id.currency_id != config.currency_id:
-            #         raise ValidationError(_("All payment methods must be in the same currency as the Sales Journal or the company currency if that is not set."))
+            # Validación de moneda de listas de precios
+            if any(config.available_pricelist_ids.mapped(lambda pl: pl.currency_id != config.currency_id)):
+                raise ValidationError(_("Todas las listas de precios disponibles deben estar en la misma moneda que el POS."))
 
-        if any(self.available_pricelist_ids.mapped(lambda pricelist: pricelist.currency_id != self.currency_id)):
-            raise ValidationError(_("All available pricelists must be in the same currency as the company or"
-                                    " as the Sales Journal set on this point of sale if you use"
-                                    " the Accounting application."))
-        if self.invoice_journal_id.currency_id and self.invoice_journal_id.currency_id != self.currency_id:
-            raise ValidationError(_("The invoice journal must be in the same currency as the Sales Journal or the company currency if that is not set."))
-
+            # Validación de diario de facturación
+            if config.invoice_journal_id.currency_id and config.invoice_journal_id.currency_id != config.currency_id:
+                raise ValidationError(_("El diario de factura debe estar en la misma moneda que el Punto de Venta."))

@@ -1,44 +1,60 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<templates id="template" xml:space="preserve">
-    <t t-name="CashMovePopupRefCurrency" owl="1">
+<?xml version="1.0" encoding="UTF-8"?><templates id="template" xml:space="preserve">
+    <t t-name="pos_show_dual_currency.CashMovePopupRefCurrency" owl="1">
         <div class="popup cash-move-popup">
-                    <main class="body">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <header class="modal-header">
+                        <h4 class="modal-title"><t t-esc="props.title" /></h4>
+                    </header>
+                    <main class="body modal-body">
                         <div class="cash-move">
                             <div class="input-amount">
-                                <span t-on-click="() => this.onClickButton('in')" class="input-type"
+                                <span t-on-click="() => this.onClickButton('in')" 
+                                      class="input-type"
                                       t-att-class="{ highlight: state.inputType == 'in' }">
                                     Cash In
                                 </span>
-                                <span t-on-click="() => this.onClickButton('out')" class="input-type"
+                                <span t-on-click="() => this.onClickButton('out')" 
+                                      class="input-type"
                                       t-att-class="{ 'red-highlight': state.inputType == 'out' }">
                                     Cash Out
                                 </span>
-                                <div class="input-field">
-                                    <input type="text" name="amount" t-model="state.inputAmount"
-                                           t-ref="input-amount-ref" t-on-keypress="_onAmountKeypress"/>
-                                    <t t-if="env.pos.res_currency_ref.symbol.length > 1">
-                                        <span class="left-currency" t-esc="env.pos.res_currency_ref.symbol"/>
-                                    </t>
-                                    <t t-else="">
-                                        <span class="left-currency" t-esc="env.pos.res_currency_ref.symbol"/>
-                                    </t>
+                                
+                                <div class="input-field mt-2">
+                                    <input type="number" 
+                                           name="amount" 
+                                           t-model.number="state.inputAmount"
+                                           t-ref="input-amount-ref" 
+                                           t-on-keypress="_onAmountKeypress"
+                                           class="form-control"
+                                           placeholder="0.00"/>
+                                    
+                                    <span class="left-currency" 
+                                          t-esc="pos.res_currency_ref ? pos.res_currency_ref.symbol : '$'"/>
                                 </div>
                             </div>
-                            <textarea name="reason" t-model="state.inputReason" placeholder="Reason"></textarea>
-                            <span t-if="state.inputHasError" class="error-message">
-                                <t t-esc="errorMessage"/>
+                            
+                            <textarea name="reason" 
+                                      class="form-control mt-3"
+                                      t-model="state.inputReason" 
+                                      placeholder="Motivo del movimiento..."></textarea>
+                            
+                            <span t-if="state.inputHasError" class="error-message text-danger">
+                                <t t-esc="state.errorMessage"/>
                             </span>
                         </div>
                     </main>
-            <footer class="footer cash-move">
-                        <div class="button confirm disable highlight" t-on-click="confirm">
-                            Confirm
+                    
+                    <footer class="footer modal-footer mt-3">
+                        <div class="button confirm btn btn-primary" t-on-click="confirm">
+                            Confirmar
                         </div>
-                <div class="button cancel" t-on-click="cancel">
+                        <div class="button cancel btn btn-secondary" t-on-click="cancel">
                             <t t-esc="props.cancelText"/>
                         </div>
                     </footer>
                 </div>
+            </div>
+        </div>
     </t>
 </templates>
-

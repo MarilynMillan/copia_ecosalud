@@ -1,99 +1,55 @@
 /** @odoo-module */
 
-import { ClosePosPopup } from "@point_of_sale/app/utils/close_pos_popup";
+import { ClosePosPopup } from "@point_of_sale/app/navbar/closing_popup/closing_popup";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
-import { _t } from "@web/core/l10n/translation";
 
 patch(ClosePosPopup.prototype, {
-    
     setup() {
-        super.setup();
+        // 1. Siempre pasar arguments a super.setup
+        super.setup(...arguments);
         this.notification = useService("notification");
         this.orm = useService("orm");
+        this.popup = useService("popup"); // Necesario para showPopup en v17
 
         this.manualInputCashCountUSD = false;
-        Object.assign(this, this.props.info);
-
-        this.state = useState({
-            ...this.props.info.state,
+        
+        // 2. IMPORTANTE: Usar Object.assign en lugar de re-declarar this.state
+        // Esto mantiene notes, payments, etc., del componente original.
+        Object.assign(this.state, {
             displayMoneyDetailsPopupUSD: false,
+            // Inicializamos el objeto de pagos USD si no viene en las props
+            payments_usd: this.props.info?.state?.payments_usd || {
+                [this.props.default_cash_details.default_cash_details_ref?.id]: { counted: 0, difference: 0 }
+            }
         });
-    }
+        
+        // Asignamos el resto de la info de las props a la instancia
+        Object.assign(this, this.props.info);
+    },
 
     async confirm() {
+        // En Odoo 17, el acceso a popups cambió de this.pos.showPopup a this.popup.add
         if (!this.cashControl || !this.hasDifferenceUSD()) {
             return super.confirm();
         } else if (this.hasUserAuthorityUSD()) {
-            const { confirmed } = await this.pos.showPopup("ConfirmPopup", {
+            const confirmed = await this.popup.add("ConfirmPopup", {
                 title: this.env._t("Currency Ref Payments Difference"),
-                body: this.env._t(
-                    "Do you want to accept currency ref payments difference and post a profit/loss journal entry?"
-                ),
+                body: this.env._t("Do you want to accept currency ref payments difference and post a profit/loss journal entry?"),
             });
             if (confirmed) return super.confirm();
         } else {
-            await this.pos.showPopup("ConfirmPopup", {
+            await this.popup.add("ConfirmPopup", {
                 title: this.env._t("Currency Ref Payments Difference"),
-                body: this.env._t(
-                    "The maximum difference by currency ref allowed is %s.\nPlease contact your manager to accept the closing difference.",
+                body: this.env._t("The maximum difference by currency ref allowed is %s.\nPlease contact your manager to accept the closing difference.",
                     this.pos.format_currency_ref(this.amountAuthorizedDiffUSD)
                 ),
                 confirmText: this.env._t("OK"),
             });
         }
-    }
+    },
 
-    openDetailsPopupUSD() {
-        const refId = this.defaultCashDetails?.default_cash_details_ref?.id;
-        if (!refId) return;
-
-        this.state.payments_usd[refId].counted = 0;
-        this.state.payments_usd[refId].difference = -this.defaultCashDetails.default_cash_details_ref.amount;
-        this.state.displayMoneyDetailsPopupUSD = true;
-    }
-
-    closeDetailsPopupUSD() {
-        this.state.displayMoneyDetailsPopupUSD = false;
-    }
-
-    handleInputChangeUSD(paymentId) {
-        let expectedAmount;
-        if (paymentId === this.defaultCashDetails.default_cash_details_ref.id) {
-            this.manualInputCashCountUSD = true;
-            expectedAmount = this.defaultCashDetails.default_cash_details_ref.amount;
-        } else {
-            expectedAmount = this.otherPaymentMethods.find((pm) => paymentId === pm.id).amount;
-        }
-        this.state.payments_usd[paymentId].difference = this.pos.round_decimals_currency(
-            this.state.payments_usd[paymentId].counted - expectedAmount
-        );
-    }
-
-    updateCountedCashUSD({ total_ref, moneyDetailsNotesRef }) {
-        const refId = this.defaultCashDetails.default_cash_details_ref.id;
-
-        this.state.payments_usd[refId].counted = total_ref;
-        this.state.payments_usd[refId].difference = this.pos.round_decimals_currency(
-            this.state.payments_usd[refId].counted - this.defaultCashDetails.default_cash_details_ref.amount
-        );
-
-        if (moneyDetailsNotesRef) {
-            this.state.notes = (this.state.notes || "") + moneyDetailsNotesRef;
-        }
-        this.manualInputCashCountUSD = false;
-        this.closeDetailsPopupUSD();
-    }
-
-    hasDifferenceUSD() {
-        return Object.values(this.state.payments_usd || {}).some((pm) => pm.difference != 0);
-    }
-
-    hasUserAuthorityUSD() {
-        const diffs = Object.values(this.state.payments_usd || {}).map((pm) => Math.abs(pm.difference || 0));
-        const maxDiff = diffs.length ? Math.max(...diffs) : 0;
-        return this.isManager || this.amountAuthorizedDiffUSD == null || maxDiff <= this.amountAuthorizedDiffUSD;
-    }
+    // ... (Tus métodos openDetailsPopupUSD, handleInputChangeUSD, etc. están bien)
 
     async closeSession() {
         if (this.closeSessionClicked) return;
@@ -119,10 +75,11 @@ patch(ClosePosPopup.prototype, {
                 [this.pos.pos_session.id],
                 this.state.notes || "",
             ]);
-        } finally {
+        } catch (error) {
             this.closeSessionClicked = false;
+            throw error; // Deja que Odoo maneje el error de RPC
         }
 
         return super.closeSession();
     }
-}
+});

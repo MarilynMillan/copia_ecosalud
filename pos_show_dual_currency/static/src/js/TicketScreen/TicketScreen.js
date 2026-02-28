@@ -3,7 +3,7 @@
 import { patch } from "@web/core/utils/patch";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_screen";
-import { getRefRate } from "../utils/ref_rate";
+import { getRefRate } from "@pos_show_dual_currency/js/utils/ref_rate";
 
 patch(TicketScreen.prototype, "pos_show_dual_currency.TicketScreen", {
     setup() {

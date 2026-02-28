@@ -4,7 +4,7 @@ import { patch } from "@web/core/utils/patch";
 import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { floatIsZero } from "@web/core/utils/numbers";
 import { OrderSummary } from "@point_of_sale/app/screens/product_screen/order_summary/order_summary";
-import { getRefRate } from "../../utils/ref_rate";
+import { getRefRate } from "@pos_show_dual_currency/js/utils/ref_rate";
 
 // Eliminamos "pos_show_dual_currency.OrderSummary"
 patch(OrderSummary.prototype, {

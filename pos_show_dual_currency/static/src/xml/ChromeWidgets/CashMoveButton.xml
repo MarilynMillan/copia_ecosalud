@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <t t-name="CashMoveButtonRefCurrency" owl="1">
+    <t t-name="pos_show_dual_currency.CashMoveButtonRefCurrency" owl="1">
         <li class="menu-item navbar-button" t-on-click="onClickUSD">
             <a class="dropdown-item py-2">
                 <i class="fa fa-money me-2" aria-hidden="true"></i>
@@ -10,12 +10,10 @@
         </li>
     </t>
 
-    <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
-        
-        <xpath expr="//li[@t-on-click='onCashMoveButtonClick']" position="after">
-            <CashMoveButtonRefCurrency t-if="showCashMoveButton"/>
+    <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//li[contains(@t-on-click, 'onCashMoveButtonClick')]" position="after">
+            <CashMoveButtonRefCurrency t-if="pos.config.show_dual_currency"/>
         </xpath>
-
     </t>
 
 </templates>
