@@ -4,7 +4,7 @@
     <t t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
 
         <xpath expr="//div[hasclass('opening-cash-section')]" position="after">
-            <div class="opening-cash-section mb-3" t-if="pos.config.show_dual_currency">
+            <div class="opening-cash-section mb-3" t-if="env.services.pos.config.show_dual_currency">
                 <span class="info-title d-flex flex-grow-1 align-items-start">USD opening cash</span>
                 <div class="cash-input-sub-section input-group">
                     <input class="pos-input form-control" 
