@@ -8,10 +8,10 @@ patch(OrderlineReceipt, {
     template: xml`
         <t t-patch="OrderlineReceipt" t-patch-mode="append">
             <t t-set="ref_rate"
-               t-value="env.pos.pos_session.tax_today or (env.pos.config.show_currency_rate != 0 ? (1/env.pos.config.show_currency_rate) : 1)"/>
+               t-value="env.services.pos.pos_session.tax_today or (env.services.pos.config.show_currency_rate != 0 ? (1/env.services.pos.config.show_currency_rate) : 1)"/>
             <xpath expr="//span[hasclass('price-tag')]" position="before">
                 <span class="pos-receipt-right-align" style="float:right; margin-right:10px; color:red;">
-                    <t t-esc="env.pos.format_currency_ref(props.line.get_price_with_tax() * ref_rate)"/>
+                    <t t-esc="env.services.pos.format_currency_ref(props.line.get_price_with_tax() * ref_rate)"/>
                 </span>
             </xpath>
         </t>

@@ -3,14 +3,14 @@
 
     <t t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension" owl="1">
         <xpath expr="//span[hasclass('price-tag')]" position="after">
-            <t t-if="env.pos.config.show_dual_currency">
+            <t t-if="env.services.pos.config.show_dual_currency">
                 <t t-set="ref_rate"
-                   t-value="env.pos.pos_session.tax_today or (env.pos.config.show_currency_rate != 0 ? (1/env.pos.config.show_currency_rate) : 1)"/>
+                   t-value="env.services.pos.pos_session.tax_today or (env.services.pos.config.show_currency_rate != 0 ? (1/env.services.pos.config.show_currency_rate) : 1)"/>
                 
-                <t t-set="price_ref" t-value="props.product.get_display_price(env.pos.default_pricelist, 1) * ref_rate"/>
+                <t t-set="price_ref" t-value="props.product.get_display_price(env.services.pos.default_pricelist, 1) * ref_rate"/>
 
                 <span class="price-tag" style="color: red; font-size: 0.8em; margin-left: 3px;">
-                    / <t t-esc="env.pos.format_currency_ref(price_ref)"/>
+                    / <t t-esc="env.services.pos.format_currency_ref(price_ref)"/>
                 </span>
             </t>
         </xpath>
@@ -18,11 +18,11 @@
 
    <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('price')]" position="inside">
-            <t t-if="env.pos.config.show_dual_currency">
-                <t t-set="ref_rate" t-value="env.pos.pos_session.tax_today or (env.pos.config.show_currency_rate != 0 ? (1/env.pos.config.show_currency_rate) : 1)"/>
+            <t t-if="env.services.pos.config.show_dual_currency">
+                <t t-set="ref_rate" t-value="env.services.pos.pos_session.tax_today or (env.services.pos.config.show_currency_rate != 0 ? (1/env.services.pos.config.show_currency_rate) : 1)"/>
                 <t t-set="subtotal_ref" t-value="(props.line.price or 0) * ref_rate"/>
                 <div style="color:red; font-size: 0.8em; font-weight: bold;">
-                    / <t t-esc="env.pos.format_currency_ref(subtotal_ref)"/>
+                    / <t t-esc="env.services.pos.format_currency_ref(subtotal_ref)"/>
                 </div>
             </t>
         </xpath>
@@ -30,10 +30,10 @@
 
     <t t-inherit="point_of_sale.OrderWidget" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('order-summary')]" position="inside">
-            <t t-if="env.pos.config.show_dual_currency">
-                <t t-set="ref_rate" t-value="env.pos.pos_session.tax_today or 1"/>
+            <t t-if="env.services.pos.config.show_dual_currency">
+                <t t-set="ref_rate" t-value="env.services.pos.pos_session.tax_today or 1"/>
                 <div class="total-ref" style="color:red; font-size: 1.2rem; margin-top: 5px;">
-                    Ref: <t t-esc="env.pos.format_currency_ref(props.order.get_total_with_tax() * ref_rate)"/>
+                    Ref: <t t-esc="env.services.pos.format_currency_ref(props.order.get_total_with_tax() * ref_rate)"/>
                 </div>
             </t>
         </xpath>

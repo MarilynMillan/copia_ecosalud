@@ -12,7 +12,7 @@
 
     <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
         <xpath expr="//li[contains(@t-on-click, 'onCashMoveButtonClick')]" position="after">
-            <CashMoveButtonRefCurrency t-if="pos.config.show_dual_currency"/>
+            <CashMoveButtonRefCurrency t-if="env.services.pos.config.show_dual_currency"/>
         </xpath>
     </t>
 

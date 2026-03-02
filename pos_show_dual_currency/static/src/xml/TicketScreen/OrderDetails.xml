@@ -4,7 +4,7 @@
     <t t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
         <xpath expr="//OrderWidget" position="inside">
             <t t-set-slot="total-after">
-                <div t-if="env.pos.config.show_dual_currency" class="total-ref" style="color: red; text-align: right; font-weight: bold;">
+                <div t-if="env.services.pos.config.show_dual_currency" class="total-ref" style="color: red; text-align: right; font-weight: bold;">
                     Total Ref: <t t-esc="total_ref"/>
                 </div>
             </t>

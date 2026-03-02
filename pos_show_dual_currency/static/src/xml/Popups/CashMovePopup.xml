@@ -30,7 +30,7 @@
                                            placeholder="0.00"/>
                                     
                                     <span class="left-currency" 
-                                          t-esc="pos.res_currency_ref ? pos.res_currency_ref.symbol : '$'"/>
+                                          t-esc="env.services.pos.res_currency_ref ? env.services.pos.res_currency_ref.symbol : '$'"/>
                                 </div>
                             </div>
                             
